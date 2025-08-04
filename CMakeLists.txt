@@ -5,7 +5,7 @@ project(Mystical VERSION 1.0.0 LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# Find Qt6 components
+# Find Qt6 components first
 find_package(Qt6 6.7 REQUIRED COMPONENTS 
     Core 
     Widgets 
@@ -18,6 +18,10 @@ find_package(Qt6 6.7 REQUIRED COMPONENTS
 
 # Enable Qt's standard project setup
 qt_standard_project_setup()
+
+# Now we can set Qt policies after loading Qt
+qt_policy(SET QTP0001 NEW)
+qt_policy(SET QTP0004 NEW)
 
 # Define source files
 set(SOURCES
@@ -76,23 +80,17 @@ qt_add_qml_module(Mystical
         qml/styles/Animations.qml
     RESOURCES
         resources/icons/mystical-icon.png
-        resources/images/default-cover.png
-)
-
-# Add resource files
-qt_add_resources(Mystical "resources"
-    PREFIX "/"
-    FILES
         resources/icons/steam-icon.png
         resources/icons/epic-icon.png  
         resources/icons/gog-icon.png
         resources/icons/minecraft-icon.png
         resources/icons/roblox-icon.png
+        resources/images/default-cover.png
         resources/images/background-blur.png
 )
 
-# Link Qt libraries
-target_link_libraries(Mystical 
+# Link Qt libraries (using PRIVATE keyword)
+target_link_libraries(Mystical PRIVATE
     Qt6::Core
     Qt6::Widgets  
     Qt6::Quick
@@ -104,7 +102,7 @@ target_link_libraries(Mystical
 
 # Windows-specific libraries for registry access
 if(WIN32)
-    target_link_libraries(Mystical advapi32)
+    target_link_libraries(Mystical PRIVATE advapi32)
 endif()
 
 # Set executable properties
