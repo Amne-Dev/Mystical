@@ -1,0 +1,12 @@
+module Mystical
+typeinfo Mystical.qmltypes
+prefer :/Mystical/
+GameCard 1.0 qml/components/GameCard.qml
+GameGrid 1.0 qml/components/GameGrid.qml
+SearchBar 1.0 qml/components/SearchBar.qml
+SettingsPanel 1.0 qml/components/SettingsPanel.qml
+LibraryPage 1.0 qml/pages/LibraryPage.qml
+SettingsPage 1.0 qml/pages/SettingsPage.qml
+Theme 1.0 qml/styles/Theme.qml
+Animations 1.0 qml/styles/Animations.qml
+

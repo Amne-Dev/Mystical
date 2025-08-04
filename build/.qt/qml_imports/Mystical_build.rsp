@@ -1,0 +1,15 @@
+-rootPath
+C:/Users/amdev/OneDrive/Documents/GitHub/mystical
+-cmake-output
+-output-file
+C:/Users/amdev/OneDrive/Documents/GitHub/mystical/build/.qt/qml_imports/Mystical_build.cmake
+-importPath
+C:/Users/amdev/OneDrive/Documents/GitHub/mystical/build/Mystical
+-importPath
+C:/Users/amdev/OneDrive/Documents/GitHub/mystical/build
+-importPath
+C:/Qt/6.9.1/mingw_64/qml
+-qrcFiles
+C:/Users/amdev/OneDrive/Documents/GitHub/mystical/build/.qt/rcc/qmake_Mystical.qrc
+C:/Users/amdev/OneDrive/Documents/GitHub/mystical/build/.qt/rcc/Mystical_raw_qml_0.qrc
+C:/Users/amdev/OneDrive/Documents/GitHub/mystical/build/.qt/rcc/resources.qrc

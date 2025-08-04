@@ -1,0 +1,16 @@
+<RCC>
+  <qresource prefix="/Mystical/">
+    <file alias="qml/main.qml">C:/Users/amdev/OneDrive/Documents/GitHub/mystical/qml/main.qml</file>
+    <file alias="qml/components/GameCard.qml">C:/Users/amdev/OneDrive/Documents/GitHub/mystical/qml/components/GameCard.qml</file>
+    <file alias="qml/components/GameGrid.qml">C:/Users/amdev/OneDrive/Documents/GitHub/mystical/qml/components/GameGrid.qml</file>
+    <file alias="qml/components/SearchBar.qml">C:/Users/amdev/OneDrive/Documents/GitHub/mystical/qml/components/SearchBar.qml</file>
+    <file alias="qml/components/SettingsPanel.qml">C:/Users/amdev/OneDrive/Documents/GitHub/mystical/qml/components/SettingsPanel.qml</file>
+    <file alias="qml/pages/LibraryPage.qml">C:/Users/amdev/OneDrive/Documents/GitHub/mystical/qml/pages/LibraryPage.qml</file>
+    <file alias="qml/pages/SettingsPage.qml">C:/Users/amdev/OneDrive/Documents/GitHub/mystical/qml/pages/SettingsPage.qml</file>
+    <file alias="qml/styles/Theme.qml">C:/Users/amdev/OneDrive/Documents/GitHub/mystical/qml/styles/Theme.qml</file>
+    <file alias="qml/styles/Animations.qml">C:/Users/amdev/OneDrive/Documents/GitHub/mystical/qml/styles/Animations.qml</file>
+    <file alias="resources/icons/mystical-icon.png">C:/Users/amdev/OneDrive/Documents/GitHub/mystical/resources/icons/mystical-icon.png</file>
+    <file alias="resources/images/default-cover.png">C:/Users/amdev/OneDrive/Documents/GitHub/mystical/resources/images/default-cover.png</file>
+  </qresource>
+</RCC>
+

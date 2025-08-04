@@ -1,0 +1,11 @@
+<RCC>
+  <qresource prefix="/">
+    <file alias="resources/icons/steam-icon.png">C:/Users/amdev/OneDrive/Documents/GitHub/mystical/resources/icons/steam-icon.png</file>
+    <file alias="resources/icons/epic-icon.png">C:/Users/amdev/OneDrive/Documents/GitHub/mystical/resources/icons/epic-icon.png</file>
+    <file alias="resources/icons/gog-icon.png">C:/Users/amdev/OneDrive/Documents/GitHub/mystical/resources/icons/gog-icon.png</file>
+    <file alias="resources/icons/minecraft-icon.png">C:/Users/amdev/OneDrive/Documents/GitHub/mystical/resources/icons/minecraft-icon.png</file>
+    <file alias="resources/icons/roblox-icon.png">C:/Users/amdev/OneDrive/Documents/GitHub/mystical/resources/icons/roblox-icon.png</file>
+    <file alias="resources/images/background-blur.png">C:/Users/amdev/OneDrive/Documents/GitHub/mystical/resources/images/background-blur.png</file>
+  </qresource>
+</RCC>
+
