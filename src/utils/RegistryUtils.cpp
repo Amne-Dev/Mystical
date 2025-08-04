@@ -3,7 +3,9 @@
 #ifdef Q_OS_WIN
 #include <QSettings>
 #include <QDir>
+#include <QStandardPaths>
 #include <windows.h>
+#include <lmcons.h>  // For UNLEN constant
 #endif
 
 QString RegistryUtils::readString(const QString& key, const QString& valueName, const QString& defaultValue)
@@ -237,4 +239,3 @@ QString RegistryUtils::getUserName()
 #endif
     return QString();
 }
-

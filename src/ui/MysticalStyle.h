@@ -1,5 +1,4 @@
 #pragma once
-
 #include <QProxyStyle>
 #include <QStyleOption>
 #include <QPainter>

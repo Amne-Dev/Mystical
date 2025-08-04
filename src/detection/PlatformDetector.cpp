@@ -5,6 +5,7 @@
 #include <QJsonDocument>
 #include <QJsonArray>
 #include <QLoggingCategory>
+#include <QDirIterator>
 
 Q_LOGGING_CATEGORY(minecraftDetector, "mystical.minecraft")
 

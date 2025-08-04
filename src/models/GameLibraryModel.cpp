@@ -455,7 +455,9 @@ void GameLibraryModel::beginModelReset()
 void GameLibraryModel::endModelReset()
 {
     endResetModel();
-}raryModel::setFilterText(const QString& text)
+}
+
+void GameLibraryModel::setFilterText(const QString& text)
 {
     if (m_filterText != text) {
         m_filterText = text;
