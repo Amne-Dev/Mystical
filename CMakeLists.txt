@@ -4,6 +4,9 @@ project(Mystical VERSION 1.0.0 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
 
 # Find Qt6 components first
 find_package(Qt6 6.7 REQUIRED COMPONENTS 
@@ -15,6 +18,12 @@ find_package(Qt6 6.7 REQUIRED COMPONENTS
     Network 
     Concurrent
 )
+
+# Try to find optional components
+find_package(Qt6 COMPONENTS WinExtras QUIET)
+if(NOT Qt6WinExtras_FOUND)
+    message(STATUS "Qt6WinExtras not found - Windows-specific features will be disabled")
+endif()
 
 # Enable Qt's standard project setup
 qt_standard_project_setup()
@@ -64,7 +73,7 @@ set(HEADERS
 # Create the executable
 qt_add_executable(Mystical ${SOURCES} ${HEADERS})
 
-# Add QML module
+# Add QML module (temporarily removed missing resources)
 qt_add_qml_module(Mystical
     URI Mystical
     VERSION 1.0

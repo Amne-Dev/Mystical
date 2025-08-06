@@ -1,95 +1,107 @@
 #include <QApplication>
 #include <QQmlApplicationEngine>
 #include <QQmlContext>
-#include <QQuickStyle>
 #include <QIcon>
 #include <QDir>
 #include <QStandardPaths>
 #include <QLoggingCategory>
+#include <QDebug>
 
+// Core classes
 #include "core/GameLibrary.h"
 #include "core/Settings.h"
+
+// Models
 #include "models/GameLibraryModel.h"
 #include "models/SettingsModel.h"
+
+// UI
 #include "ui/MysticalStyle.h"
+
+// Utils
+#include "utils/ImageCache.h"
 
 Q_LOGGING_CATEGORY(mystical, "mystical")
 
 int main(int argc, char *argv[])
 {
+    // Enable high DPI support (automatic in Qt 6.9+)
     QApplication app(argc, argv);
     
     // Set application properties
     app.setApplicationName("Mystical");
     app.setApplicationVersion("1.0.0");
-    app.setOrganizationName("Mystical Games");
+    app.setOrganizationName("Mystical Game Library");
+    app.setOrganizationDomain("mystical-game-library.com");
     app.setApplicationDisplayName("Mystical Game Library");
     
     // Set application icon
     app.setWindowIcon(QIcon(":/resources/icons/mystical-icon.png"));
     
-    // Apply custom Windows 11 style
-    app.setStyle(new MysticalStyle());
-    
-    // Configure Qt Quick style for Windows 11
-    QQuickStyle::setStyle("Windows");
-    
-    // Enable high DPI support
-    app.setAttribute(Qt::AA_EnableHighDpiScaling);
-    app.setAttribute(Qt::AA_UseHighDpiPixmaps);
+    // Apply custom style for Windows 11 integration
+    auto *mysticalStyle = new MysticalStyle();
+    app.setStyle(mysticalStyle);
     
     // Initialize core components
-    Settings* settings = new Settings(&app);
-    GameLibrary* gameLibrary = new GameLibrary(&app);
+    auto *settings     = new Settings(&app);
+    auto *gameLibrary  = new GameLibrary(&app);
+    auto *imageCache   = new ImageCache(&app);
     
-    // Initialize models
-    GameLibraryModel* gameLibraryModel = new GameLibraryModel(gameLibrary, &app);
-    SettingsModel* settingsModel = new SettingsModel(settings, &app);
+    // Initialize models — pass the core objects directly
+    auto *gameLibraryModel = new GameLibraryModel(gameLibrary, &app);
+    auto *settingsModel    = new SettingsModel(settings,    &app);
     
-    // Setup QML engine
+    // (No calls to setGameLibrary() or setSettings() — these methods do not exist)
+    
+    // Create QML engine
     QQmlApplicationEngine engine;
     
-    // Register types with QML
+    // Register types for QML (if you need to instantiate in QML)
     qmlRegisterType<GameLibraryModel>("Mystical", 1, 0, "GameLibraryModel");
-    qmlRegisterType<SettingsModel>("Mystical", 1, 0, "SettingsModel");
+    qmlRegisterType<SettingsModel>   ("Mystical", 1, 0, "SettingsModel");
     
-    // Expose models to QML context
-    engine.rootContext()->setContextProperty("gameLibraryModel", gameLibraryModel);
-    engine.rootContext()->setContextProperty("settingsModel", settingsModel);
-    engine.rootContext()->setContextProperty("gameLibrary", gameLibrary);
-    engine.rootContext()->setContextProperty("appSettings", settings);
+    // Expose C++ objects to QML
+    auto *rootContext = engine.rootContext();
+    rootContext->setContextProperty("gameLibrary",      gameLibrary);
+    rootContext->setContextProperty("gameLibraryModel", gameLibraryModel);
+    rootContext->setContextProperty("appSettings",      settingsModel);
+    rootContext->setContextProperty("imageCache",       imageCache);
     
     // Set up resource paths
-    engine.addImportPath(":/qml");
-    engine.addImportPath("qrc:/qml");
+    rootContext->setContextProperty("resourcePath", "qrc:/resources/");
     
     // Load main QML file
     const QUrl url(QStringLiteral("qrc:/qml/main.qml"));
     QObject::connect(&engine, &QQmlApplicationEngine::objectCreated,
                      &app, [url](QObject *obj, const QUrl &objUrl) {
         if (!obj && url == objUrl) {
-            qCritical(mystical) << "Failed to load QML file:" << url;
-            QApplication::exit(-1);
+            qCritical() << "Failed to load main QML file";
+            QCoreApplication::exit(-1);
         }
     }, Qt::QueuedConnection);
     
-    engine.load(url);
+    QObject::connect(&engine, &QQmlApplicationEngine::warnings,
+                     &app, [](const QList<QQmlError> &warnings) {
+        for (const auto &warning : warnings) {
+            qWarning() << "QML Warning:" << warning.toString();
+        }
+    });
     
+    engine.load(url);
     if (engine.rootObjects().isEmpty()) {
-        qCritical(mystical) << "No root objects found in QML";
+        qCritical() << "No root objects found in QML";
         return -1;
     }
     
-    // Initialize game library (scan for games)
+    // Save settings on exit
     QObject::connect(&app, &QApplication::aboutToQuit, [&]() {
-        qInfo(mystical) << "Application shutting down";
+        qDebug() << "Application shutting down...";
         settings->save();
     });
     
-    // Start background game detection
+    // Start initial game scan
     gameLibrary->startInitialScan();
     
-    qInfo(mystical) << "Mystical Game Library started successfully";
-    
+    qDebug() << "Mystical Game Library started successfully";
     return app.exec();
 }

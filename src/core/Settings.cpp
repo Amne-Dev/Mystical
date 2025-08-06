@@ -1,35 +1,32 @@
 #include "Settings.h"
 #include <QStandardPaths>
 #include <QDir>
-#include <QJsonDocument>
-#include <QJsonObject>
-#include <QCoreApplication>
-#include <QLoggingCategory>
+#include <QDebug>
+#include <QApplication>
+#include <QScreen>
 
 #ifdef Q_OS_WIN
-#include <QWinTaskbarButton>
 #include <QSettings>
+#include <QSysInfo>
 #endif
 
-Q_LOGGING_CATEGORY(settings, "mystical.settings")
-
-const QString Settings::DEFAULT_LANGUAGE = "en";
-
-Settings::Settings(QObject* parent)
+Settings::Settings(QObject *parent)
     : QObject(parent)
+    , m_settings(nullptr)
+    , m_isDarkMode(true)
+    , m_startWithSystem(false)
+    , m_minimizeToTray(true)
+    , m_autoScanGames(true)
+    , m_autoScanInterval(30)
+    , m_windowWidth(1200)
+    , m_windowHeight(800)
+    , m_windowX(-1)
+    , m_windowY(-1)
+    , m_isMaximized(false)
 {
-    // Initialize QSettings
-    QString configPath = QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation);
-    QDir().mkpath(configPath);
-    
-    QString settingsFile = QDir(configPath).filePath("mystical.ini");
-    m_settings = new QSettings(settingsFile, QSettings::IniFormat, this);
-    
-    // Load settings
-    loadDefaults();
-    load();
-    
-    qInfo(settings) << "Settings initialized from:" << settingsFile;
+    initializeSettings();
+    loadSettings();
+    detectSystemTheme();
 }
 
 Settings::~Settings()
@@ -37,346 +34,373 @@ Settings::~Settings()
     save();
 }
 
-void Settings::setIsDarkMode(bool dark)
+void Settings::initializeSettings()
 {
-    if (m_isDarkMode != dark) {
-        m_isDarkMode = dark;
-        setValue("theme/isDarkMode", dark);
-        emit isDarkModeChanged();
-        emit settingsChanged();
-    }
-}
-
-void Settings::setLanguage(const QString& language)
-{
-    if (m_language != language) {
-        m_language = language;
-        setValue("general/language", language);
-        emit languageChanged();
-        emit settingsChanged();
-    }
-}
-
-void Settings::setStartWithSystem(bool start)
-{
-    if (m_startWithSystem != start) {
-        m_startWithSystem = start;
-        setValue("startup/startWithSystem", start);
-        
-        // Update system startup registry
-        if (start) {
-            setupSystemStartup();
-        } else {
-            removeSystemStartup();
-        }
-        
-        emit startWithSystemChanged();
-        emit settingsChanged();
-    }
-}
-
-void Settings::setMinimizeToTray(bool minimize)
-{
-    if (m_minimizeToTray != minimize) {
-        m_minimizeToTray = minimize;
-        setValue("window/minimizeToTray", minimize);
-        emit minimizeToTrayChanged();
-        emit settingsChanged();
-    }
-}
-
-void Settings::setAutoScanGames(bool autoScan)
-{
-    if (m_autoScanGames != autoScan) {
-        m_autoScanGames = autoScan;
-        setValue("games/autoScanGames", autoScan);
-        emit autoScanGamesChanged();
-        emit settingsChanged();
-    }
-}
-
-void Settings::setAutoScanInterval(int minutes)
-{
-    if (m_autoScanInterval != minutes) {
-        m_autoScanInterval = minutes;
-        setValue("games/autoScanInterval", minutes);
-        emit autoScanIntervalChanged();
-        emit settingsChanged();
-    }
-}
-
-void Settings::setWindowWidth(int width)
-{
-    if (m_windowWidth != width) {
-        m_windowWidth = width;
-        setValue("window/width", width);
-        emit windowWidthChanged();
-        emit settingsChanged();
-    }
-}
-
-void Settings::setWindowHeight(int height)
-{
-    if (m_windowHeight != height) {
-        m_windowHeight = height;
-        setValue("window/height", height);
-        emit windowHeightChanged();
-        emit settingsChanged();
-    }
-}
-
-void Settings::setWindowMaximized(bool maximized)
-{
-    if (m_windowMaximized != maximized) {
-        m_windowMaximized = maximized;
-        setValue("window/maximized", maximized);
-        emit windowMaximizedChanged();
-        emit settingsChanged();
-    }
-}
-
-QVariant Settings::getValue(const QString& key, const QVariant& defaultValue) const
-{
-    return m_settings->value(key, defaultValue);
-}
-
-void Settings::setValue(const QString& key, const QVariant& value)
-{
-    m_settings->setValue(key, value);
-    emit settingsChanged();
-}
-
-bool Settings::contains(const QString& key) const
-{
-    return m_settings->contains(key);
-}
-
-void Settings::remove(const QString& key)
-{
-    m_settings->remove(key);
-    emit settingsChanged();
-}
-
-void Settings::resetToDefaults()
-{
-    qInfo(settings) << "Resetting settings to defaults";
+    // Create settings object with proper organization and application name
+    m_settings = new QSettings(QSettings::IniFormat, QSettings::UserScope,
+                              QApplication::organizationName(),
+                              QApplication::applicationName(),
+                              this);
     
-    // Clear all settings
-    m_settings->clear();
+    // Ensure settings directory exists
+    QString settingsDir = QFileInfo(m_settings->fileName()).absolutePath();
+    QDir().mkpath(settingsDir);
     
-    // Load defaults
-    loadDefaults();
-    
-    // Emit all change signals
-    emit isDarkModeChanged();
-    emit languageChanged();
-    emit startWithSystemChanged();
-    emit minimizeToTrayChanged();
-    emit autoScanGamesChanged();
-    emit autoScanIntervalChanged();
-    emit windowWidthChanged();
-    emit windowHeightChanged();
-    emit windowMaximizedChanged();
-    emit settingsChanged();
-    
-    // Save to persist the reset
-    save();
+    qDebug() << "Settings file:" << m_settings->fileName();
 }
 
-void Settings::exportSettings(const QString& filePath) const
+void Settings::loadSettings()
 {
-    QJsonObject settingsObj;
+    if (!m_settings) {
+        return;
+    }
     
-    // Theme settings
-    QJsonObject themeObj;
-    themeObj["isDarkMode"] = m_isDarkMode;
-    settingsObj["theme"] = themeObj;
+    // Appearance settings
+    m_isDarkMode = m_settings->value("appearance/darkMode", true).toBool();
+    m_language = m_settings->value("appearance/language", "English").toString();
+    m_accentColor = m_settings->value("appearance/accentColor", "#0078d4").toString();
     
-    // General settings
-    QJsonObject generalObj;
-    generalObj["language"] = m_language;
-    settingsObj["general"] = generalObj;
+    // Behavior settings
+    m_startWithSystem = m_settings->value("behavior/startWithSystem", false).toBool();
+    m_minimizeToTray = m_settings->value("behavior/minimizeToTray", true).toBool();
+    m_checkForUpdates = m_settings->value("behavior/checkForUpdates", true).toBool();
     
-    // Startup settings
-    QJsonObject startupObj;
-    startupObj["startWithSystem"] = m_startWithSystem;
-    settingsObj["startup"] = startupObj;
+    // Game library settings
+    m_autoScanGames = m_settings->value("gameLibrary/autoScan", true).toBool();
+    m_autoScanInterval = m_settings->value("gameLibrary/scanInterval", 30).toInt();
     
     // Window settings
-    QJsonObject windowObj;
-    windowObj["minimizeToTray"] = m_minimizeToTray;
-    windowObj["width"] = m_windowWidth;
-    windowObj["height"] = m_windowHeight;
-    windowObj["maximized"] = m_windowMaximized;
-    settingsObj["window"] = windowObj;
+    m_windowWidth = m_settings->value("window/width", 1200).toInt();
+    m_windowHeight = m_settings->value("window/height", 800).toInt();
+    m_windowX = m_settings->value("window/x", -1).toInt();
+    m_windowY = m_settings->value("window/y", -1).toInt();
+    m_isMaximized = m_settings->value("window/maximized", false).toBool();
     
-    // Game settings
-    QJsonObject gamesObj;
-    gamesObj["autoScanGames"] = m_autoScanGames;
-    gamesObj["autoScanInterval"] = m_autoScanInterval;
-    settingsObj["games"] = gamesObj;
+    // Performance settings
+    m_enableAnimations = m_settings->value("performance/animations", true).toBool();
+    m_enableTransparency = m_settings->value("performance/transparency", true).toBool();
+    m_imageCacheSize = m_settings->value("performance/imageCacheSize", 500).toInt();
     
-    // Export metadata
-    QJsonObject rootObj;
-    rootObj["version"] = "1.0";
-    rootObj["exportDate"] = QDateTime::currentDateTime().toString(Qt::ISODate);
-    rootObj["application"] = "Mystical";
-    rootObj["settings"] = settingsObj;
+    // Privacy settings
+    m_usageStatistics = m_settings->value("privacy/usageStatistics", false).toBool();
+    m_crashReports = m_settings->value("privacy/crashReports", true).toBool();
+    m_onlineCoverArt = m_settings->value("privacy/onlineCoverArt", true).toBool();
     
-    QJsonDocument doc(rootObj);
+    // Platform settings
+    loadPlatformSettings();
     
-    QFile file(filePath);
-    if (file.open(QIODevice::WriteOnly)) {
-        file.write(doc.toJson());
-        qInfo(settings) << "Exported settings to:" << filePath;
-    } else {
-        qWarning(settings) << "Failed to export settings to:" << filePath;
-    }
-}
-
-bool Settings::importSettings(const QString& filePath)
-{
-    QFile file(filePath);
-    if (!file.open(QIODevice::ReadOnly)) {
-        qWarning(settings) << "Failed to open settings import file:" << filePath;
-        return false;
-    }
-    
-    QJsonDocument doc = QJsonDocument::fromJson(file.readAll());
-    if (doc.isNull()) {
-        qWarning(settings) << "Invalid JSON in settings import file:" << filePath;
-        return false;
-    }
-    
-    QJsonObject rootObj = doc.object();
-    QJsonObject settingsObj = rootObj["settings"].toObject();
-    
-    if (settingsObj.isEmpty()) {
-        qWarning(settings) << "No settings found in import file:" << filePath;
-        return false;
-    }
-    
-    // Import theme settings
-    QJsonObject themeObj = settingsObj["theme"].toObject();
-    if (themeObj.contains("isDarkMode")) {
-        setIsDarkMode(themeObj["isDarkMode"].toBool());
-    }
-    
-    // Import general settings
-    QJsonObject generalObj = settingsObj["general"].toObject();
-    if (generalObj.contains("language")) {
-        setLanguage(generalObj["language"].toString());
-    }
-    
-    // Import startup settings
-    QJsonObject startupObj = settingsObj["startup"].toObject();
-    if (startupObj.contains("startWithSystem")) {
-        setStartWithSystem(startupObj["startWithSystem"].toBool());
-    }
-    
-    // Import window settings
-    QJsonObject windowObj = settingsObj["window"].toObject();
-    if (windowObj.contains("minimizeToTray")) {
-        setMinimizeToTray(windowObj["minimizeToTray"].toBool());
-    }
-    if (windowObj.contains("width")) {
-        setWindowWidth(windowObj["width"].toInt());
-    }
-    if (windowObj.contains("height")) {
-        setWindowHeight(windowObj["height"].toInt());
-    }
-    if (windowObj.contains("maximized")) {
-        setWindowMaximized(windowObj["maximized"].toBool());
-    }
-    
-    // Import game settings
-    QJsonObject gamesObj = settingsObj["games"].toObject();
-    if (gamesObj.contains("autoScanGames")) {
-        setAutoScanGames(gamesObj["autoScanGames"].toBool());
-    }
-    if (gamesObj.contains("autoScanInterval")) {
-        setAutoScanInterval(gamesObj["autoScanInterval"].toInt());
-    }
-    
-    save();
-    
-    qInfo(settings) << "Imported settings from:" << filePath;
-    return true;
+    qDebug() << "Settings loaded successfully";
 }
 
 void Settings::save()
 {
+    if (!m_settings) {
+        return;
+    }
+    
+    // Appearance settings
+    m_settings->setValue("appearance/darkMode", m_isDarkMode);
+    m_settings->setValue("appearance/language", m_language);
+    m_settings->setValue("appearance/accentColor", m_accentColor);
+    
+    // Behavior settings
+    m_settings->setValue("behavior/startWithSystem", m_startWithSystem);
+    m_settings->setValue("behavior/minimizeToTray", m_minimizeToTray);
+    m_settings->setValue("behavior/checkForUpdates", m_checkForUpdates);
+    
+    // Game library settings
+    m_settings->setValue("gameLibrary/autoScan", m_autoScanGames);
+    m_settings->setValue("gameLibrary/scanInterval", m_autoScanInterval);
+    
+    // Window settings
+    m_settings->setValue("window/width", m_windowWidth);
+    m_settings->setValue("window/height", m_windowHeight);
+    m_settings->setValue("window/x", m_windowX);
+    m_settings->setValue("window/y", m_windowY);
+    m_settings->setValue("window/maximized", m_isMaximized);
+    
+    // Performance settings
+    m_settings->setValue("performance/animations", m_enableAnimations);
+    m_settings->setValue("performance/transparency", m_enableTransparency);
+    m_settings->setValue("performance/imageCacheSize", m_imageCacheSize);
+    
+    // Privacy settings
+    m_settings->setValue("privacy/usageStatistics", m_usageStatistics);
+    m_settings->setValue("privacy/crashReports", m_crashReports);
+    m_settings->setValue("privacy/onlineCoverArt", m_onlineCoverArt);
+    
+    // Platform settings
+    savePlatformSettings();
+    
+    // Force sync to disk
     m_settings->sync();
-    qDebug(settings) << "Settings saved";
-}
-
-void Settings::load()
-{
-    m_isDarkMode = m_settings->value("theme/isDarkMode", DEFAULT_DARK_MODE).toBool();
-    m_language = m_settings->value("general/language", DEFAULT_LANGUAGE).toString();
-    m_startWithSystem = m_settings->value("startup/startWithSystem", DEFAULT_START_WITH_SYSTEM).toBool();
-    m_minimizeToTray = m_settings->value("window/minimizeToTray", DEFAULT_MINIMIZE_TO_TRAY).toBool();
-    m_autoScanGames = m_settings->value("games/autoScanGames", DEFAULT_AUTO_SCAN_GAMES).toBool();
-    m_autoScanInterval = m_settings->value("games/autoScanInterval", DEFAULT_AUTO_SCAN_INTERVAL).toInt();
-    m_windowWidth = m_settings->value("window/width", DEFAULT_WINDOW_WIDTH).toInt();
-    m_windowHeight = m_settings->value("window/height", DEFAULT_WINDOW_HEIGHT).toInt();
-    m_windowMaximized = m_settings->value("window/maximized", DEFAULT_WINDOW_MAXIMIZED).toBool();
     
-    qDebug(settings) << "Settings loaded";
+    qDebug() << "Settings saved successfully";
 }
 
-void Settings::sync()
+void Settings::resetToDefaults()
 {
-    m_settings->sync();
+    if (!m_settings) {
+        return;
+    }
+    
+    // Clear all settings
+    m_settings->clear();
+    
+    // Reset to default values
+    setIsDarkMode(true);
+    setLanguage("English");
+    setAccentColor("#0078d4");
+    setStartWithSystem(false);
+    setMinimizeToTray(true);
+    setCheckForUpdates(true);
+    setAutoScanGames(true);
+    setAutoScanInterval(30);
+    setEnableAnimations(true);
+    setEnableTransparency(true);
+    setImageCacheSize(500);
+    setUsageStatistics(false);
+    setCrashReports(true);
+    setOnlineCoverArt(true);
+    
+    // Reset platform settings
+    m_platformSettings.clear();
+    m_platformSettings["Steam"] = true;
+    m_platformSettings["Epic Games"] = true;
+    m_platformSettings["GOG"] = true;
+    m_platformSettings["EA App"] = true;
+    m_platformSettings["Minecraft"] = true;
+    m_platformSettings["Roblox"] = false;
+    
+    save();
+    
+    emit settingsReset();
+    qDebug() << "Settings reset to defaults";
 }
 
-void Settings::loadDefaults()
-{
-    m_isDarkMode = DEFAULT_DARK_MODE;
-    m_language = DEFAULT_LANGUAGE;
-    m_startWithSystem = DEFAULT_START_WITH_SYSTEM;
-    m_minimizeToTray = DEFAULT_MINIMIZE_TO_TRAY;
-    m_autoScanGames = DEFAULT_AUTO_SCAN_GAMES;
-    m_autoScanInterval = DEFAULT_AUTO_SCAN_INTERVAL;
-    m_windowWidth = DEFAULT_WINDOW_WIDTH;
-    m_windowHeight = DEFAULT_WINDOW_HEIGHT;
-    m_windowMaximized = DEFAULT_WINDOW_MAXIMIZED;
-}
-
-void Settings::setupSystemStartup()
+void Settings::detectSystemTheme()
 {
 #ifdef Q_OS_WIN
-    QString appPath = QCoreApplication::applicationFilePath();
-    QString regPath = getStartupRegistryPath();
+    // On Windows, check the system theme preference
+    QSettings registry("HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize",
+                      QSettings::NativeFormat);
     
-    QSettings registry(regPath, QSettings::NativeFormat);
-    registry.setValue("Mystical", QString("\"%1\"").arg(appPath));
+    bool systemUsesLightTheme = registry.value("AppsUseLightTheme", 0).toBool();
+    m_systemIsDarkMode = !systemUsesLightTheme;
     
-    qInfo(settings) << "Added to system startup";
+    qDebug() << "System theme detected:" << (m_systemIsDarkMode ? "Dark" : "Light");
 #else
-    qWarning(settings) << "System startup not implemented for this platform";
+    // On other platforms, assume dark mode for now
+    m_systemIsDarkMode = true;
+#endif
+    
+    emit systemThemeChanged();
+}
+
+void Settings::loadPlatformSettings()
+{
+    m_settings->beginGroup("platforms");
+    
+    // Default platform enablement
+    m_platformSettings["Steam"] = m_settings->value("Steam", true).toBool();
+    m_platformSettings["Epic Games"] = m_settings->value("EpicGames", true).toBool();
+    m_platformSettings["GOG"] = m_settings->value("GOG", true).toBool();
+    m_platformSettings["EA App"] = m_settings->value("EAApp", true).toBool();
+    m_platformSettings["Minecraft"] = m_settings->value("Minecraft", true).toBool();
+    m_platformSettings["Roblox"] = m_settings->value("Roblox", false).toBool();
+    
+    m_settings->endGroup();
+}
+
+void Settings::savePlatformSettings()
+{
+    m_settings->beginGroup("platforms");
+    
+    for (auto it = m_platformSettings.begin(); it != m_platformSettings.end(); ++it) {
+        QString key = it.key();
+        key.replace(" ", ""); // Remove spaces for registry key
+        m_settings->setValue(key, it.value());
+    }
+    
+    m_settings->endGroup();
+}
+
+void Settings::updateStartupRegistry()
+{
+#ifdef Q_OS_WIN
+    QSettings startup("HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Run",
+                     QSettings::NativeFormat);
+    
+    const QString appName = QApplication::applicationName();
+    
+    if (m_startWithSystem) {
+        QString appPath = QApplication::applicationFilePath();
+        startup.setValue(appName, QDir::toNativeSeparators(appPath));
+        qDebug() << "Added to Windows startup";
+    } else {
+        startup.remove(appName);
+        qDebug() << "Removed from Windows startup";
+    }
 #endif
 }
 
-void Settings::removeSystemStartup()
+// Property setters with change notifications
+void Settings::setIsDarkMode(bool isDarkMode)
 {
-#ifdef Q_OS_WIN
-    QString regPath = getStartupRegistryPath();
-    
-    QSettings registry(regPath, QSettings::NativeFormat);
-    registry.remove("Mystical");
-    
-    qInfo(settings) << "Removed from system startup";
-#else
-    qWarning(settings) << "System startup not implemented for this platform";
-#endif
+    if (m_isDarkMode != isDarkMode) {
+        m_isDarkMode = isDarkMode;
+        emit isDarkModeChanged();
+    }
 }
 
-QString Settings::getStartupRegistryPath() const
+void Settings::setLanguage(const QString &language)
 {
-#ifdef Q_OS_WIN
-    return "HKEY_CURRENT_USER\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run";
-#else
-    return QString();
-#endif
+    if (m_language != language) {
+        m_language = language;
+        emit languageChanged();
+    }
+}
+
+void Settings::setAccentColor(const QString &accentColor)
+{
+    if (m_accentColor != accentColor) {
+        m_accentColor = accentColor;
+        emit accentColorChanged();
+    }
+}
+
+void Settings::setStartWithSystem(bool startWithSystem)
+{
+    if (m_startWithSystem != startWithSystem) {
+        m_startWithSystem = startWithSystem;
+        updateStartupRegistry();
+        emit startWithSystemChanged();
+    }
+}
+
+void Settings::setMinimizeToTray(bool minimizeToTray)
+{
+    if (m_minimizeToTray != minimizeToTray) {
+        m_minimizeToTray = minimizeToTray;
+        emit minimizeToTrayChanged();
+    }
+}
+
+void Settings::setCheckForUpdates(bool checkForUpdates)
+{
+    if (m_checkForUpdates != checkForUpdates) {
+        m_checkForUpdates = checkForUpdates;
+        emit checkForUpdatesChanged();
+    }
+}
+
+void Settings::setAutoScanGames(bool autoScanGames)
+{
+    if (m_autoScanGames != autoScanGames) {
+        m_autoScanGames = autoScanGames;
+        emit autoScanGamesChanged();
+    }
+}
+
+void Settings::setAutoScanInterval(int autoScanInterval)
+{
+    if (m_autoScanInterval != autoScanInterval) {
+        m_autoScanInterval = autoScanInterval;
+        emit autoScanIntervalChanged();
+    }
+}
+
+void Settings::setEnableAnimations(bool enableAnimations)
+{
+    if (m_enableAnimations != enableAnimations) {
+        m_enableAnimations = enableAnimations;
+        emit enableAnimationsChanged();
+    }
+}
+
+void Settings::setEnableTransparency(bool enableTransparency)
+{
+    if (m_enableTransparency != enableTransparency) {
+        m_enableTransparency = enableTransparency;
+        emit enableTransparencyChanged();
+    }
+}
+
+void Settings::setImageCacheSize(int imageCacheSize)
+{
+    if (m_imageCacheSize != imageCacheSize) {
+        m_imageCacheSize = imageCacheSize;
+        emit imageCacheSizeChanged();
+    }
+}
+
+void Settings::setUsageStatistics(bool usageStatistics)
+{
+    if (m_usageStatistics != usageStatistics) {
+        m_usageStatistics = usageStatistics;
+        emit usageStatisticsChanged();
+    }
+}
+
+void Settings::setCrashReports(bool crashReports)
+{
+    if (m_crashReports != crashReports) {
+        m_crashReports = crashReports;
+        emit crashReportsChanged();
+    }
+}
+
+void Settings::setOnlineCoverArt(bool onlineCoverArt)
+{
+    if (m_onlineCoverArt != onlineCoverArt) {
+        m_onlineCoverArt = onlineCoverArt;
+        emit onlineCoverArtChanged();
+    }
+}
+
+void Settings::setPlatformEnabled(const QString &platform, bool enabled)
+{
+    if (m_platformSettings.value(platform) != enabled) {
+        m_platformSettings[platform] = enabled;
+        emit platformSettingsChanged();
+    }
+}
+
+bool Settings::isPlatformEnabled(const QString &platform) const
+{
+    return m_platformSettings.value(platform, true);
+}
+
+void Settings::setWindowGeometry(int width, int height, int x, int y, bool maximized)
+{
+    bool changed = false;
+    
+    if (m_windowWidth != width) {
+        m_windowWidth = width;
+        changed = true;
+    }
+    
+    if (m_windowHeight != height) {
+        m_windowHeight = height;
+        changed = true;
+    }
+    
+    if (m_windowX != x) {
+        m_windowX = x;
+        changed = true;
+    }
+    
+    if (m_windowY != y) {
+        m_windowY = y;
+        changed = true;
+    }
+    
+    if (m_isMaximized != maximized) {
+        m_isMaximized = maximized;
+        changed = true;
+    }
+    
+    if (changed) {
+        emit windowGeometryChanged();
+    }
 }

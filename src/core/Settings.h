@@ -1,113 +1,211 @@
-#pragma once
+#ifndef SETTINGS_H
+#define SETTINGS_H
 
 #include <QObject>
 #include <QSettings>
-#include <QVariant>
+#include <QVariantMap>
+#include <QString>
 
+/**
+ * @brief Manages application settings and preferences
+ * 
+ * This class handles all application settings including:
+ * - Appearance (theme, colors, language)
+ * - Behavior (startup, system tray)
+ * - Game library preferences
+ * - Window geometry
+ * - Platform detection settings
+ * - Performance options
+ * - Privacy settings
+ */
 class Settings : public QObject
 {
     Q_OBJECT
+    
+    // Appearance properties
     Q_PROPERTY(bool isDarkMode READ isDarkMode WRITE setIsDarkMode NOTIFY isDarkModeChanged)
     Q_PROPERTY(QString language READ language WRITE setLanguage NOTIFY languageChanged)
+    Q_PROPERTY(QString accentColor READ accentColor WRITE setAccentColor NOTIFY accentColorChanged)
+    Q_PROPERTY(bool systemIsDarkMode READ systemIsDarkMode NOTIFY systemThemeChanged)
+    
+    // Behavior properties
     Q_PROPERTY(bool startWithSystem READ startWithSystem WRITE setStartWithSystem NOTIFY startWithSystemChanged)
     Q_PROPERTY(bool minimizeToTray READ minimizeToTray WRITE setMinimizeToTray NOTIFY minimizeToTrayChanged)
+    Q_PROPERTY(bool checkForUpdates READ checkForUpdates WRITE setCheckForUpdates NOTIFY checkForUpdatesChanged)
+    
+    // Game library properties
     Q_PROPERTY(bool autoScanGames READ autoScanGames WRITE setAutoScanGames NOTIFY autoScanGamesChanged)
     Q_PROPERTY(int autoScanInterval READ autoScanInterval WRITE setAutoScanInterval NOTIFY autoScanIntervalChanged)
-    Q_PROPERTY(int windowWidth READ windowWidth WRITE setWindowWidth NOTIFY windowWidthChanged)
-    Q_PROPERTY(int windowHeight READ windowHeight WRITE setWindowHeight NOTIFY windowHeightChanged)
-    Q_PROPERTY(bool windowMaximized READ windowMaximized WRITE setWindowMaximized NOTIFY windowMaximizedChanged)
     
+    // Window properties
+    Q_PROPERTY(int windowWidth READ windowWidth NOTIFY windowGeometryChanged)
+    Q_PROPERTY(int windowHeight READ windowHeight NOTIFY windowGeometryChanged)
+    Q_PROPERTY(int windowX READ windowX NOTIFY windowGeometryChanged)
+    Q_PROPERTY(int windowY READ windowY NOTIFY windowGeometryChanged)
+    Q_PROPERTY(bool isMaximized READ isMaximized NOTIFY windowGeometryChanged)
+    
+    // Performance properties
+    Q_PROPERTY(bool enableAnimations READ enableAnimations WRITE setEnableAnimations NOTIFY enableAnimationsChanged)
+    Q_PROPERTY(bool enableTransparency READ enableTransparency WRITE setEnableTransparency NOTIFY enableTransparencyChanged)
+    Q_PROPERTY(int imageCacheSize READ imageCacheSize WRITE setImageCacheSize NOTIFY imageCacheSizeChanged)
+    
+    // Privacy properties
+    Q_PROPERTY(bool usageStatistics READ usageStatistics WRITE setUsageStatistics NOTIFY usageStatisticsChanged)
+    Q_PROPERTY(bool crashReports READ crashReports WRITE setCrashReports NOTIFY crashReportsChanged)
+    Q_PROPERTY(bool onlineCoverArt READ onlineCoverArt WRITE setOnlineCoverArt NOTIFY onlineCoverArtChanged)
+
 public:
-    explicit Settings(QObject* parent = nullptr);
-    ~Settings();
-    
-    // Theme settings
+    explicit Settings(QObject *parent = nullptr);
+    ~Settings() override;
+
+    // Appearance getters
     bool isDarkMode() const { return m_isDarkMode; }
-    void setIsDarkMode(bool dark);
-    
-    // Language settings
     QString language() const { return m_language; }
-    void setLanguage(const QString& language);
+    QString accentColor() const { return m_accentColor; }
+    bool systemIsDarkMode() const { return m_systemIsDarkMode; }
     
-    // Startup behavior
+    // Behavior getters
     bool startWithSystem() const { return m_startWithSystem; }
-    void setStartWithSystem(bool start);
-    
     bool minimizeToTray() const { return m_minimizeToTray; }
-    void setMinimizeToTray(bool minimize);
+    bool checkForUpdates() const { return m_checkForUpdates; }
     
-    // Game scanning
+    // Game library getters
     bool autoScanGames() const { return m_autoScanGames; }
-    void setAutoScanGames(bool autoScan);
-    
     int autoScanInterval() const { return m_autoScanInterval; }
-    void setAutoScanInterval(int minutes);
     
-    // Window state
+    // Window getters
     int windowWidth() const { return m_windowWidth; }
-    void setWindowWidth(int width);
-    
     int windowHeight() const { return m_windowHeight; }
-    void setWindowHeight(int height);
+    int windowX() const { return m_windowX; }
+    int windowY() const { return m_windowY; }
+    bool isMaximized() const { return m_isMaximized; }
     
-    bool windowMaximized() const { return m_windowMaximized; }
-    void setWindowMaximized(bool maximized);
+    // Performance getters
+    bool enableAnimations() const { return m_enableAnimations; }
+    bool enableTransparency() const { return m_enableTransparency; }
+    int imageCacheSize() const { return m_imageCacheSize; }
     
-    // Advanced settings
-    Q_INVOKABLE QVariant getValue(const QString& key, const QVariant& defaultValue = QVariant()) const;
-    Q_INVOKABLE void setValue(const QString& key, const QVariant& value);
-    Q_INVOKABLE bool contains(const QString& key) const;
-    Q_INVOKABLE void remove(const QString& key);
+    // Privacy getters
+    bool usageStatistics() const { return m_usageStatistics; }
+    bool crashReports() const { return m_crashReports; }
+    bool onlineCoverArt() const { return m_onlineCoverArt; }
     
-    // Bulk operations
-    Q_INVOKABLE void resetToDefaults();
-    Q_INVOKABLE void exportSettings(const QString& filePath) const;
-    Q_INVOKABLE bool importSettings(const QString& filePath);
+    // Platform settings
+    Q_INVOKABLE bool isPlatformEnabled(const QString &platform) const;
+    Q_INVOKABLE void setPlatformEnabled(const QString &platform, bool enabled);
     
+    // Window geometry management
+    Q_INVOKABLE void setWindowGeometry(int width, int height, int x, int y, bool maximized);
+
 public slots:
+    // Settings management
     void save();
-    void load();
-    void sync();
+    void resetToDefaults();
+    void detectSystemTheme();
     
+    // Appearance setters
+    void setIsDarkMode(bool isDarkMode);
+    void setLanguage(const QString &language);
+    void setAccentColor(const QString &accentColor);
+    
+    // Behavior setters
+    void setStartWithSystem(bool startWithSystem);
+    void setMinimizeToTray(bool minimizeToTray);
+    void setCheckForUpdates(bool checkForUpdates);
+    
+    // Game library setters
+    void setAutoScanGames(bool autoScanGames);
+    void setAutoScanInterval(int autoScanInterval);
+    
+    // Performance setters
+    void setEnableAnimations(bool enableAnimations);
+    void setEnableTransparency(bool enableTransparency);
+    void setImageCacheSize(int imageCacheSize);
+    
+    // Privacy setters
+    void setUsageStatistics(bool usageStatistics);
+    void setCrashReports(bool crashReports);
+    void setOnlineCoverArt(bool onlineCoverArt);
+
 signals:
+    // Appearance signals
     void isDarkModeChanged();
     void languageChanged();
+    void accentColorChanged();
+    void systemThemeChanged();
+    
+    // Behavior signals
     void startWithSystemChanged();
     void minimizeToTrayChanged();
+    void checkForUpdatesChanged();
+    
+    // Game library signals
     void autoScanGamesChanged();
     void autoScanIntervalChanged();
-    void windowWidthChanged();
-    void windowHeightChanged();
-    void windowMaximizedChanged();
-    void settingsChanged();
     
+    // Window signals
+    void windowGeometryChanged();
+    
+    // Performance signals
+    void enableAnimationsChanged();
+    void enableTransparencyChanged();
+    void imageCacheSizeChanged();
+    
+    // Privacy signals
+    void usageStatisticsChanged();
+    void crashReportsChanged();
+    void onlineCoverArtChanged();
+    
+    // Platform signals
+    void platformSettingsChanged();
+    
+    // General signals
+    void settingsReset();
+
 private:
-    void loadDefaults();
-    void setupSystemStartup();
-    void removeSystemStartup();
-    QString getStartupRegistryPath() const;
+    void initializeSettings();
+    void loadSettings();
+    void loadPlatformSettings();
+    void savePlatformSettings();
+    void updateStartupRegistry();
+
+private:
+    QSettings *m_settings;
     
-    QSettings* m_settings;
-    
-    // Cached values for performance
+    // Appearance settings
     bool m_isDarkMode;
     QString m_language;
+    QString m_accentColor;
+    bool m_systemIsDarkMode;
+    
+    // Behavior settings
     bool m_startWithSystem;
     bool m_minimizeToTray;
+    bool m_checkForUpdates;
+    
+    // Game library settings
     bool m_autoScanGames;
     int m_autoScanInterval;
+    
+    // Window settings
     int m_windowWidth;
     int m_windowHeight;
-    bool m_windowMaximized;
+    int m_windowX;
+    int m_windowY;
+    bool m_isMaximized;
     
-    // Default values
-    static const bool DEFAULT_DARK_MODE = true;
-    static const QString DEFAULT_LANGUAGE;
-    static const bool DEFAULT_START_WITH_SYSTEM = false;
-    static const bool DEFAULT_MINIMIZE_TO_TRAY = true;
-    static const bool DEFAULT_AUTO_SCAN_GAMES = true;
-    static const int DEFAULT_AUTO_SCAN_INTERVAL = 30; // minutes
-    static const int DEFAULT_WINDOW_WIDTH = 1200;
-    static const int DEFAULT_WINDOW_HEIGHT = 800;
-    static const bool DEFAULT_WINDOW_MAXIMIZED = false;
+    // Performance settings
+    bool m_enableAnimations;
+    bool m_enableTransparency;
+    int m_imageCacheSize;
+    
+    // Privacy settings
+    bool m_usageStatistics;
+    bool m_crashReports;
+    bool m_onlineCoverArt;
+    
+    // Platform settings
+    QVariantMap m_platformSettings;
 };
+
+#endif // SETTINGS_H
