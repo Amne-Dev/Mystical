@@ -7,349 +7,417 @@
 #include <QJsonObject>
 #include <QJsonArray>
 #include <QDebug>
+#include <QLoggingCategory>
+#include <QFileInfo>
+#include <QDirIterator>
+
+Q_LOGGING_CATEGORY(minecraftDetector, "mystical.minecraft")
 
 MinecraftDetector::MinecraftDetector(QObject *parent)
     : PlatformDetector(parent)
 {
 }
 
-MinecraftDetector::~MinecraftDetector() = default;
-
-QString MinecraftDetector::platformName() const
+QString MinecraftDetector::platformVersion() const
 {
-    return "Minecraft";
-}
-
-QString MinecraftDetector::platformIcon() const
-{
-    return "qrc:/resources/icons/minecraft-icon.png";
-}
-
-bool MinecraftDetector::isInstalled() const
-{
-    return !getMinecraftInstallPath().isEmpty();
-}
-
-QList<GameInfo> MinecraftDetector::detectGames()
-{
-    QList<GameInfo> games;
-    
-    // Detect Minecraft Java Edition
-    auto javaEdition = detectMinecraftJava();
-    if (javaEdition.isValid()) {
-        games.append(javaEdition);
-    }
-    
-    // Detect Minecraft Bedrock Edition (Windows 10)
-    auto bedrockEdition = detectMinecraftBedrock();
-    if (bedrockEdition.isValid()) {
-        games.append(bedrockEdition);
-    }
-    
-    // Detect Minecraft Dungeons
-    auto dungeons = detectMinecraftDungeons();
-    if (dungeons.isValid()) {
-        games.append(dungeons);
-    }
-    
-    return games;
-}
-
-QString MinecraftDetector::getMinecraftInstallPath() const
-{
-    // Check for Minecraft Launcher installation
-    QStringList possiblePaths = {
-        QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + "/.minecraft",
-        QDir::homePath() + "/.minecraft",
-        "C:/Users/" + qgetenv("USERNAME") + "/AppData/Roaming/.minecraft"
-    };
-    
-    for (const QString &path : possiblePaths) {
-        if (QDir(path).exists()) {
-            return path;
-        }
-    }
-    
-    // Check registry for Microsoft Store version
-#ifdef Q_OS_WIN
-    QString registryPath = RegistryUtils::readRegistryValue(
-        HKEY_LOCAL_MACHINE,
-        "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\Microsoft.MinecraftUWP_8wekyb3d8bbwe",
-        "InstallLocation"
-    );
-    
-    if (!registryPath.isEmpty() && QDir(registryPath).exists()) {
-        return registryPath;
-    }
-#endif
-    
-    return QString();
-}
-
-GameInfo MinecraftDetector::detectMinecraftJava()
-{
-    QString minecraftPath = getMinecraftInstallPath();
-    if (minecraftPath.isEmpty()) {
-        return GameInfo();
-    }
-    
-    GameInfo game;
-    game.setTitle("Minecraft: Java Edition");
-    game.setPlatform(platformName());
-    game.setInstallPath(minecraftPath);
-    game.setExecutablePath(findMinecraftLauncher());
-    game.setIsInstalled(!game.executablePath().isEmpty());
-    
-    // Try to get version information
-    QString versionInfo = getMinecraftVersion(minecraftPath);
-    if (!versionInfo.isEmpty()) {
-        game.setVersion(versionInfo);
-    }
-    
-    // Set cover art path
-    game.setCoverArt("qrc:/resources/images/minecraft-java-cover.png");
-    
-    // Get playtime if possible (from launcher profiles)
-    int playtime = getMinecraftPlaytime(minecraftPath);
-    if (playtime > 0) {
-        game.setPlaytimeMinutes(playtime);
-    }
-    
-    // Set launch arguments
-    game.setLaunchArguments(QStringList());
-    
-    return game;
-}
-
-GameInfo MinecraftDetector::detectMinecraftBedrock()
-{
-#ifdef Q_OS_WIN
-    // Check for Microsoft Store version
-    QString appxPath = QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation) 
-                      + "/../Packages/Microsoft.MinecraftUWP_8wekyb3d8bbwe";
-    
-    if (!QDir(appxPath).exists()) {
-        return GameInfo();
-    }
-    
-    GameInfo game;
-    game.setTitle("Minecraft: Bedrock Edition");
-    game.setPlatform(platformName());
-    game.setInstallPath(appxPath);
-    game.setExecutablePath("minecraft://"); // Protocol handler
-    game.setIsInstalled(true);
-    game.setCoverArt("qrc:/resources/images/minecraft-bedrock-cover.png");
-    
-    return game;
-#else
-    return GameInfo();
-#endif
-}
-
-GameInfo MinecraftDetector::detectMinecraftDungeons()
-{
-#ifdef Q_OS_WIN
-    // Check registry for Minecraft Dungeons
-    QString installPath = RegistryUtils::readRegistryValue(
-        HKEY_LOCAL_MACHINE,
-        "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\Microsoft.Lovika_8wekyb3d8bbwe",
-        "InstallLocation"
-    );
-    
-    if (installPath.isEmpty() || !QDir(installPath).exists()) {
-        return GameInfo();
-    }
-    
-    GameInfo game;
-    game.setTitle("Minecraft Dungeons");
-    game.setPlatform(platformName());
-    game.setInstallPath(installPath);
-    game.setExecutablePath("minecraft-dungeons://"); // Protocol handler
-    game.setIsInstalled(true);
-    game.setCoverArt("qrc:/resources/images/minecraft-dungeons-cover.png");
-    
-    return game;
-#else
-    return GameInfo();
-#endif
-}
-
-QString MinecraftDetector::findMinecraftLauncher() const
-{
-    QStringList possibleLaunchers = {
-        // Official Minecraft Launcher
-        "C:/Program Files (x86)/Minecraft Launcher/MinecraftLauncher.exe",
-        "C:/Program Files/Minecraft Launcher/MinecraftLauncher.exe",
-        
-        // Alternative locations
-        QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + "/MinecraftLauncher.exe",
-        
-        // Legacy launcher
-        "C:/Program Files (x86)/Minecraft/MinecraftLauncher.exe"
-    };
-    
-    for (const QString &launcher : possibleLaunchers) {
-        if (QFile::exists(launcher)) {
-            return launcher;
-        }
-    }
-    
-    // Check if launcher is in PATH
-    QString pathLauncher = FileUtils::findExecutableInPath("MinecraftLauncher.exe");
-    if (!pathLauncher.isEmpty()) {
-        return pathLauncher;
-    }
-    
-    return QString();
-}
-
-QString MinecraftDetector::getMinecraftVersion(const QString &minecraftPath) const
-{
-    // Try to read version from launcher_profiles.json
-    QString profilesPath = minecraftPath + "/launcher_profiles.json";
-    if (!QFile::exists(profilesPath)) {
+    QString launcherPath = getMinecraftLauncherPath();
+    if (launcherPath.isEmpty()) {
         return QString();
     }
     
-    QFile file(profilesPath);
-    if (!file.open(QIODevice::ReadOnly)) {
-        return QString();
-    }
-    
-    QJsonParseError error;
-    QJsonDocument doc = QJsonDocument::fromJson(file.readAll(), &error);
-    file.close();
-    
-    if (error.error != QJsonParseError::NoError) {
-        return QString();
-    }
-    
-    QJsonObject root = doc.object();
-    QJsonObject profiles = root["profiles"].toObject();
-    
-    // Get the latest release version from profiles
-    for (auto it = profiles.begin(); it != profiles.end(); ++it) {
-        QJsonObject profile = it.value().toObject();
-        QString lastVersionId = profile["lastVersionId"].toString();
-        
-        if (!lastVersionId.isEmpty() && lastVersionId != "latest-release") {
-            return lastVersionId;
-        }
+    QFileInfo launcherInfo(launcherPath);
+    if (launcherInfo.exists()) {
+        return launcherInfo.lastModified().toString("yyyy.MM.dd");
     }
     
     return "Unknown";
 }
 
-int MinecraftDetector::getMinecraftPlaytime(const QString &minecraftPath) const
+bool MinecraftDetector::isAvailable() const
 {
-    // Minecraft doesn't store playtime directly, but we could estimate from logs
-    // For now, return 0 as playtime tracking would require more complex analysis
-    Q_UNUSED(minecraftPath)
-    return 0;
+    // Check for Minecraft installation directory
+    QString minecraftPath = getMinecraftPath();
+    if (!minecraftPath.isEmpty() && directoryExists(minecraftPath)) {
+        return true;
+    }
+    
+    // Check for Minecraft Launcher
+    return !getMinecraftLauncherPath().isEmpty();
 }
 
-bool MinecraftDetector::canLaunchGame(const GameInfo &game) const
+QList<GameInfo> MinecraftDetector::detectGames()
 {
-    if (game.platform() != platformName()) {
-        return false;
+    emit detectionStarted();
+    
+    QList<GameInfo> games;
+    QString minecraftPath = getMinecraftPath();
+    
+    if (minecraftPath.isEmpty()) {
+        emit error("Minecraft installation not found");
+        emit detectionFinished(games);
+        return games;
     }
     
-    // For Java Edition, check if launcher exists
-    if (game.title().contains("Java Edition")) {
-        return !findMinecraftLauncher().isEmpty();
+    qInfo(minecraftDetector) << "Minecraft found at:" << minecraftPath;
+    
+    QList<MinecraftInstallation> installations = getMinecraftInstallations();
+    
+    // Add main Minecraft entry
+    GameInfo mainGame;
+    mainGame.setTitle("Minecraft");
+    mainGame.setPlatform(platform()); // Use enum instead of string
+    mainGame.setGameId("minecraft");
+    mainGame.setInstallPath(minecraftPath);
+    mainGame.setInstalled(true); // Use setInstalled instead of setIsInstalled
+    
+    // Set up launcher executable - store in launch config or another field
+    QString launcherPath = getMinecraftLauncherPath();
+    if (!launcherPath.isEmpty()) {
+        // Store launcher path in install path or description for now
+        // Since setExecutablePath doesn't exist, we'll handle this differently
+        mainGame.setDescription("Launcher: " + launcherPath);
+    } else {
+        // Fallback to Java if available
+        QString javaPath = getMinecraftJavaPath();
+        if (!javaPath.isEmpty()) {
+            mainGame.setDescription("Java: " + javaPath);
+        }
     }
     
-    // For Bedrock/Dungeons, assume protocol handlers work
-    return true;
-}
-
-bool MinecraftDetector::launchGame(const GameInfo &game)
-{
-    if (!canLaunchGame(game)) {
-        return false;
+    // Calculate approximate size
+    QDirIterator dirIt(minecraftPath, QDir::Files, QDirIterator::Subdirectories);
+    qint64 totalSize = 0;
+    int fileCount = 0;
+    
+    while (dirIt.hasNext() && fileCount < 1000) {
+        dirIt.next();
+        totalSize += dirIt.fileInfo().size();
+        fileCount++;
     }
     
-    QString executable = game.executablePath();
-    QStringList arguments = game.launchArguments();
+    mainGame.setSizeBytes(totalSize);
     
-    // For Java Edition, launch through the official launcher
-    if (game.title().contains("Java Edition")) {
-        QString launcher = findMinecraftLauncher();
-        if (launcher.isEmpty()) {
-            return false;
+    games.append(mainGame);
+    emit gameFound(mainGame);
+    
+    // Add individual installations/profiles if multiple exist
+    int totalInstalls = installations.size();
+    int currentInstall = 0;
+    
+    for (const auto& installation : installations) {
+        reportProgress(currentInstall++, totalInstalls, installation.name);
+        
+        if (!installation.isInstalled || installation.id == "minecraft") {
+            continue; // Skip main entry we already added
         }
         
-        return FileUtils::launchProcess(launcher, arguments);
+        GameInfo profileGame;
+        profileGame.setTitle(QString("Minecraft - %1").arg(installation.name));
+        profileGame.setPlatform(platform()); // Use enum instead of string
+        profileGame.setGameId(QString("minecraft_%1").arg(installation.id));
+        profileGame.setInstallPath(installation.gameDir.isEmpty() ? minecraftPath : installation.gameDir);
+        profileGame.setDescription(QString("Minecraft %1 (%2)").arg(installation.version, installation.type));
+        profileGame.setInstalled(true); // Use setInstalled instead of setIsInstalled
+        
+        if (!launcherPath.isEmpty()) {
+            // Add launcher info to description since setExecutablePath doesn't exist
+            QString desc = profileGame.description();
+            if (!desc.isEmpty()) desc += " - ";
+            desc += "Launcher: " + launcherPath;
+            profileGame.setDescription(desc);
+        }
+        
+        profileGame.setSizeBytes(totalSize); // Approximate
+        
+        games.append(profileGame);
+        emit gameFound(profileGame);
+        
+        qDebug(minecraftDetector) << "Found Minecraft profile:" << installation.name 
+                                  << "Version:" << installation.version;
     }
     
-    // For Bedrock/Dungeons, use protocol handlers
-    if (executable.startsWith("minecraft://") || executable.startsWith("minecraft-dungeons://")) {
-        return FileUtils::openUrl(executable);
-    }
-    
-    return false;
+    qInfo(minecraftDetector) << "Minecraft detection complete. Found" << games.size() << "entries";
+    emit detectionFinished(games);
+    return games;
 }
 
-QStringList MinecraftDetector::getSupportedFileExtensions() const
+bool MinecraftDetector::canLaunchGame(const GameInfo& game) const
 {
-    return QStringList() << ".mcworld" << ".mcpack" << ".mcaddon" << ".mctemplate";
-}
-
-QString MinecraftDetector::getGameDataPath(const GameInfo &game) const
-{
-    if (game.title().contains("Java Edition")) {
-        return getMinecraftInstallPath();
+    if (game.platform() != platform()) { // Compare enum to enum
+        return false;
     }
     
-    // For Bedrock Edition
-    if (game.title().contains("Bedrock Edition")) {
-#ifdef Q_OS_WIN
-        return QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation) 
-               + "/../Packages/Microsoft.MinecraftUWP_8wekyb3d8bbwe/LocalState/games/com.mojang";
-#endif
+    // Check if we have a launcher or Java installation
+    QString launcherPath = getMinecraftLauncherPath();
+    if (!launcherPath.isEmpty()) {
+        return fileExists(launcherPath);
+    }
+    
+    QString javaPath = getMinecraftJavaPath();
+    return !javaPath.isEmpty() && fileExists(javaPath);
+}
+
+QString MinecraftDetector::validateInstallation() const
+{
+    QString minecraftPath = getMinecraftPath();
+    if (minecraftPath.isEmpty()) {
+        return "Minecraft installation directory not found";
+    }
+    
+    if (!directoryExists(minecraftPath)) {
+        return "Minecraft directory does not exist: " + minecraftPath;
+    }
+    
+    QString launcherPath = getMinecraftLauncherPath();
+    if (launcherPath.isEmpty()) {
+        QString javaPath = getMinecraftJavaPath();
+        if (javaPath.isEmpty()) {
+            return "Neither Minecraft Launcher nor Java installation found";
+        }
+    }
+    
+    return QString(); // Valid installation
+}
+
+QStringList MinecraftDetector::getInstallationPaths() const
+{
+    QStringList paths;
+    QString minecraftPath = getMinecraftPath();
+    if (!minecraftPath.isEmpty()) {
+        paths.append(minecraftPath);
+    }
+    return paths;
+}
+
+QString MinecraftDetector::getConfigPath() const
+{
+    QString minecraftPath = getMinecraftPath();
+    if (minecraftPath.isEmpty()) {
+        return QString();
+    }
+    
+    return QDir(minecraftPath).filePath("launcher_profiles.json");
+}
+
+QString MinecraftDetector::getLibraryPath() const
+{
+    QString minecraftPath = getMinecraftPath();
+    if (minecraftPath.isEmpty()) {
+        return QString();
+    }
+    
+    return QDir(minecraftPath).filePath("versions");
+}
+
+// Private methods implementation
+
+QString MinecraftDetector::getMinecraftPath() const
+{
+    if (!m_minecraftPath.isEmpty()) {
+        return m_minecraftPath;
+    }
+    
+    // Standard Minecraft directory
+    QString appData = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
+    QString minecraftDir = QDir(appData).filePath("../Roaming/.minecraft");
+    
+    if (directoryExists(minecraftDir)) {
+        m_minecraftPath = QDir(minecraftDir).absolutePath();
+        return m_minecraftPath;
+    }
+    
+    // Alternative locations
+    QStringList alternativePaths = {
+        QStandardPaths::writableLocation(QStandardPaths::HomeLocation) + "/.minecraft",
+        QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation) + "/minecraft",
+        "C:/Users/" + qgetenv("USERNAME") + "/AppData/Roaming/.minecraft"
+    };
+    
+    for (const QString& path : alternativePaths) {
+        if (directoryExists(path)) {
+            m_minecraftPath = QDir(path).absolutePath();
+            return m_minecraftPath;
+        }
     }
     
     return QString();
 }
 
-QStringList MinecraftDetector::getInstalledMods(const GameInfo &game) const
+QString MinecraftDetector::getMinecraftLauncherPath() const
 {
-    QStringList mods;
+    if (!m_launcherPath.isEmpty()) {
+        return m_launcherPath;
+    }
     
-    if (game.title().contains("Java Edition")) {
-        QString modsPath = getMinecraftInstallPath() + "/mods";
-        QDir modsDir(modsPath);
-        
-        if (modsDir.exists()) {
-            QStringList modFiles = modsDir.entryList(QStringList() << "*.jar", QDir::Files);
-            for (const QString &modFile : modFiles) {
-                // Remove .jar extension and add to list
-                QString modName = modFile;
-                modName.chop(4);
-                mods.append(modName);
-            }
+    // Try Windows Store version first
+    QStringList launcherPaths = {
+        // Microsoft Store version
+        QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation) + "/../Local/Packages/Microsoft.4297127D64EC6_8wekyb3d8bbwe/LocalCache/Local/game/Minecraft Launcher.exe",
+        // Traditional installer version
+        "C:/Program Files (x86)/Minecraft Launcher/MinecraftLauncher.exe",
+        "C:/Program Files/Minecraft Launcher/MinecraftLauncher.exe",
+        // Legacy launcher
+        "C:/Program Files (x86)/Minecraft/MinecraftLauncher.exe"
+    };
+    
+    for (const QString& path : launcherPaths) {
+        if (fileExists(path)) {
+            m_launcherPath = normalizePath(path);
+            return m_launcherPath;
         }
     }
     
-    return mods;
+    return QString();
 }
 
-bool MinecraftDetector::refreshGameInfo(GameInfo &game) const
+QString MinecraftDetector::getMinecraftJavaPath() const
 {
-    if (game.platform() != platformName()) {
-        return false;
+    if (!m_javaPath.isEmpty()) {
+        return m_javaPath;
     }
     
-    // Update installation status
-    game.setIsInstalled(canLaunchGame(game));
-    
-    // Update version if possible
-    if (game.title().contains("Java Edition")) {
-        QString version = getMinecraftVersion(getMinecraftInstallPath());
-        if (!version.isEmpty()) {
-            game.setVersion(version);
+    // Try bundled Java first
+    QString minecraftPath = getMinecraftPath();
+    if (!minecraftPath.isEmpty()) {
+        QString bundledJava = QDir(minecraftPath).filePath("runtime/java-runtime-gamma/windows/java-runtime-gamma/bin/java.exe");
+        if (fileExists(bundledJava)) {
+            m_javaPath = bundledJava;
+            return m_javaPath;
         }
     }
     
-    return true;
+    // Try system Java
+    QStringList javaPaths = {
+        "C:/Program Files/Java/jre1.8.0_301/bin/java.exe",
+        "C:/Program Files (x86)/Java/jre1.8.0_301/bin/java.exe",
+        "C:/Program Files/Eclipse Adoptium/jdk-17.0.2.8-hotspot/bin/java.exe"
+    };
+    
+    for (const QString& path : javaPaths) {
+        if (fileExists(path)) {
+            m_javaPath = normalizePath(path);
+            return m_javaPath;
+        }
+    }
+    
+    // Try PATH
+    QString javaFromPath = "java"; // This would need proper PATH resolution
+    m_javaPath = javaFromPath;
+    
+    return m_javaPath;
 }
+
+QList<MinecraftDetector::MinecraftInstallation> MinecraftDetector::getMinecraftInstallations() const
+{
+    QList<MinecraftInstallation> installations;
+    
+    QString configPath = getConfigPath();
+    if (!fileExists(configPath)) {
+        qDebug(minecraftDetector) << "Minecraft profiles file not found:" << configPath;
+        return installations;
+    }
+    
+    QFile file(configPath);
+    if (!file.open(QIODevice::ReadOnly)) {
+        qWarning(minecraftDetector) << "Failed to open Minecraft profiles file:" << configPath;
+        return installations;
+    }
+    
+    QJsonDocument doc = QJsonDocument::fromJson(file.readAll());
+    if (doc.isNull()) {
+        qWarning(minecraftDetector) << "Invalid JSON in Minecraft profiles file";
+        return installations;
+    }
+    
+    QJsonObject root = doc.object();
+    QJsonObject profiles = root["profiles"].toObject();
+    
+    for (auto it = profiles.begin(); it != profiles.end(); ++it) {
+        QString profileId = it.key();
+        QJsonObject profile = it.value().toObject();
+        
+        MinecraftInstallation installation = parseProfile(profile, profileId);
+        if (!installation.id.isEmpty()) {
+            installations.append(installation);
+        }
+    }
+    
+    return installations;
+}
+
+MinecraftDetector::MinecraftInstallation MinecraftDetector::parseProfile(const QJsonObject& profile, const QString& profileId) const
+{
+    MinecraftInstallation installation;
+    
+    installation.id = profileId;
+    installation.name = profile["name"].toString();
+    installation.type = profile["type"].toString();
+    installation.version = profile["lastVersionId"].toString();
+    installation.gameDir = profile["gameDir"].toString();
+    installation.javaPath = profile["javaDir"].toString();
+    
+    // Determine if installation is available
+    QString versionsPath = getLibraryPath();
+    if (!versionsPath.isEmpty() && !installation.version.isEmpty()) {
+        QString versionPath = QDir(versionsPath).filePath(installation.version);
+        installation.isInstalled = directoryExists(versionPath);
+    }
+    
+    // Set default game directory if not specified
+    if (installation.gameDir.isEmpty()) {
+        installation.gameDir = getMinecraftPath();
+    }
+    
+    return installation;
+}
+
+QString MinecraftDetector::getLatestVersion() const
+{
+    QString versionsPath = getLibraryPath();
+    if (versionsPath.isEmpty()) {
+        return QString();
+    }
+    
+    QDir versionsDir(versionsPath);
+    QStringList versions = versionsDir.entryList(QDir::Dirs | QDir::NoDotAndDotDot);
+    
+    // Simple heuristic: return the "latest" release if it exists
+    if (versions.contains("latest-release")) {
+        return "latest-release";
+    }
+    
+    // Otherwise return the first version (could be improved with proper version sorting)
+    return versions.isEmpty() ? QString() : versions.first();
+}
+
+QStringList MinecraftDetector::getInstalledVersions() const
+{
+    QString versionsPath = getLibraryPath();
+    if (versionsPath.isEmpty()) {
+        return QStringList();
+    }
+    
+    QDir versionsDir(versionsPath);
+    return versionsDir.entryList(QDir::Dirs | QDir::NoDotAndDotDot);
+}
+
+QString MinecraftDetector::createMinecraftLaunchCommand(const MinecraftInstallation& installation) const
+{
+    // This is a very simplified version - real Minecraft launching requires
+    // parsing version JSON files, resolving libraries, etc.
+    QString gameDir = installation.gameDir.isEmpty() ? getMinecraftPath() : installation.gameDir;
+    QString version = installation.version.isEmpty() ? getLatestVersion() : installation.version;
+    
+    QStringList args;
+    args << "-Xmx2G" << "-Xms1G";
+    args << QString("-Djava.library.path=%1/versions/%2/natives").arg(gameDir, version);
+    args << "-cp" << QString("%1/versions/%2/%2.jar").arg(gameDir, version);
+    args << "net.minecraft.client.main.Main";
+    args << "--username" << "Player";
+    args << "--version" << version;
+    args << "--gameDir" << gameDir;
+    args << "--assetsDir" << QString("%1/assets").arg(gameDir);
+    
+    return args.join(" ");
+}
+

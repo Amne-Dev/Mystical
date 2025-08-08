@@ -6,6 +6,7 @@
 #include <QSqlQuery>
 #include <QSqlError>
 #include <QLoggingCategory>
+#include <QDirIterator>
 
 Q_LOGGING_CATEGORY(gogDetector, "mystical.gog")
 
@@ -369,7 +370,7 @@ QList<GOGDetector::GOGGameInfo> GOGDetector::getInstalledGamesFromRegistry() con
     return games;
 }
 
-bool GOGDetector::openGOGDatabase()
+bool GOGDetector::openGOGDatabase() const
 {
     if (m_gogDatabase.isOpen()) {
         return true;

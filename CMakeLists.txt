@@ -140,3 +140,7 @@ set_target_properties(Mystical PROPERTIES
     LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib
     ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib
 )
+
+if(WIN32)
+    target_link_libraries(Mystical PRIVATE advapi32 dwmapi)
+endif()

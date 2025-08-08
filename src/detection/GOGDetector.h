@@ -54,7 +54,7 @@ private:
     QList<GOGGameInfo> getInstalledGamesFromRegistry() const;
     
     // Database operations
-    bool openGOGDatabase();
+    bool openGOGDatabase() const;
     void closeGOGDatabase();
     
     // GOG-specific utilities
@@ -65,5 +65,5 @@ private:
     // Cached data
     mutable QString m_gogPath;
     mutable QString m_galaxyPath;
-    QSqlDatabase m_gogDatabase;
+    mutable QSqlDatabase m_gogDatabase;
 };

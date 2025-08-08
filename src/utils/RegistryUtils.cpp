@@ -5,6 +5,7 @@
 #include <QDir>
 #include <QStandardPaths>
 #include <windows.h>
+#include <QDebug>
 #include <lmcons.h>  // For UNLEN constant
 #endif
 

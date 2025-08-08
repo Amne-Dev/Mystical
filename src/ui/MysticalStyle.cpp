@@ -17,9 +17,8 @@
 #ifdef Q_OS_WIN
 #include <windows.h>
 #include <dwmapi.h>
-#pragma comment(lib, "dwmapi.lib")
+// Note: Link dwmapi.lib in CMakeLists.txt instead of using pragma comment
 #endif
-
 
 MysticalStyle::MysticalStyle(QStyle* baseStyle)
     : QProxyStyle(baseStyle)
@@ -35,12 +34,6 @@ void MysticalStyle::drawPrimitive(PrimitiveElement element, const QStyleOption* 
     case PE_PanelButtonTool:
         drawWindows11Button(option, painter, widget);
         return;
-        
-    case PE_IndicatorScrollBarAddLine:
-    case PE_IndicatorScrollBarSubLine:
-    case PE_IndicatorScrollBarSlider:
-        // Handle in drawComplexControl
-        break;
         
     case PE_FrameLineEdit:
         drawWindows11LineEdit(option, painter, widget);
@@ -451,7 +444,11 @@ void MysticalStyle::drawGlow(QPainter* painter, const QRect& rect, const QColor&
     
     painter->setBrush(gradient);
     painter->setPen(Qt::NoPen);
-    painter->drawEllipse(rect.center(), radius, radius);
+    
+    // Fix ambiguous drawEllipse call by explicitly converting to QRectF
+    QRectF ellipseRect(rect.center().x() - radius, rect.center().y() - radius, 
+                       radius * 2, radius * 2);
+    painter->drawEllipse(ellipseRect);
 }
 
 bool MysticalStyle::isDarkMode() const

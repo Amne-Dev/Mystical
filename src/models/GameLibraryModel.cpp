@@ -492,5 +492,3 @@ void GameLibraryModel::setFilterRecent(bool recent)
         invalidateFilter();
     }
 }
-
-void GameLib

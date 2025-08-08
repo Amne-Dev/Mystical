@@ -1,49 +1,53 @@
-#pragma once
-
-#include <QString>
-#include <QStringList>
+#include "FileUtils.h"
+#include <QDir>
+#include <QFile>
 #include <QFileInfo>
+#include <QDateTime>
+#include <QDirIterator>
 
-class FileUtils
+bool FileUtils::createDirectory(const QString& path)
 {
-public:
-    // File system operations
-    static bool copyFile(const QString& source, const QString& destination);
-    static bool moveFile(const QString& source, const QString& destination);
-    static bool deleteFile(const QString& filePath);
-    static bool createDirectory(const QString& dirPath);
-    static bool deleteDirectory(const QString& dirPath);
-    
-    // File information
-    static qint64 getFileSize(const QString& filePath);
-    static qint64 getDirectorySize(const QString& dirPath);
-    static QDateTime getFileModificationTime(const QString& filePath);
-    static QString getFileExtension(const QString& filePath);
-    static QString getFileName(const QString& filePath);
-    static QString getBaseName(const QString& filePath);
-    
-    // Path utilities
-    static QString combinePaths(const QString& path1, const QString& path2);
-    static QString normalizePath(const QString& path);
-    static QString getRelativePath(const QString& from, const QString& to);
-    static QString getParentDirectory(const QString& filePath);
-    
-    // File searching
-    static QStringList findFiles(const QString& directory, const QStringList& patterns, bool recursive = false);
-    static QStringList findExecutables(const QString& directory, bool recursive = false);
-    static QString findExecutable(const QString& directory, const QString& name);
-    
-    // Validation
-    static bool isValidFileName(const QString& fileName);
-    static bool isValidPath(const QString& path);
-    static bool pathExists(const QString& path);
-    static bool isDirectory(const QString& path);
-    static bool isFile(const QString& path);
-    static bool isExecutable(const QString& filePath);
-    
-    // Safe operations
-    static QString createTempFile(const QString& prefix = "mystical_");
-    static QString createTempDirectory(const QString& prefix = "mystical_");
-    static bool safeWrite(const QString& filePath, const QByteArray& data);
-    static QByteArray safeRead(const QString& filePath);
-};
+    QDir dir;
+    return dir.mkpath(path);
+}
+
+bool FileUtils::deleteFile(const QString& path)
+{
+    return QFile::remove(path);
+}
+
+bool FileUtils::isFile(const QString& path)
+{
+    QFileInfo info(path);
+    return info.exists() && info.isFile();
+}
+
+bool FileUtils::isDirectory(const QString& path)
+{
+    QFileInfo info(path);
+    return info.exists() && info.isDir();
+}
+
+QDateTime FileUtils::getFileModificationTime(const QString& path)
+{
+    QFileInfo info(path);
+    return info.lastModified();
+}
+
+qint64 FileUtils::getDirectorySize(const QString& path)
+{
+    qint64 size = 0;
+    QDirIterator it(path, QDirIterator::Subdirectories);
+    while (it.hasNext()) {
+        QFileInfo info(it.next());
+        if (info.isFile()) {
+            size += info.size();
+        }
+    }
+    return size;
+}
+
+QString FileUtils::normalizePath(const QString& path)
+{
+    return QDir::cleanPath(path);
+}

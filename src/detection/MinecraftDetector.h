@@ -9,9 +9,10 @@ class MinecraftDetector : public PlatformDetector
     
 public:
     explicit MinecraftDetector(QObject* parent = nullptr);
+    virtual ~MinecraftDetector(); // Make sure this matches the cpp implementation
     
     // PlatformDetector interface
-    QString platformName() const override { return "Minecraft"; }
+    QString platformName() const override; // Remove the implementation from header
     GamePlatform platform() const override { return GamePlatform::Minecraft; }
     QString platformVersion() const override;
     

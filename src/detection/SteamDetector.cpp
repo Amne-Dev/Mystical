@@ -393,3 +393,222 @@ QString SteamDetector::getGameExecutable(const QString& installPath, const QStri
     
     return QString();
 }
+
+qint64 SteamDetector::getPlaytimeMinutes(const QString& appId) const
+{
+    // Steam stores playtime in localconfig.vdf
+    QString steamPath = getSteamInstallPath();
+    if (steamPath.isEmpty()) {
+        return 0;
+    }
+    
+    // Find user data directories
+    QDir userdataDir(QDir(steamPath).filePath("userdata"));
+    if (!userdataDir.exists()) {
+        return 0;
+    }
+    
+    QStringList userDirs = userdataDir.entryList(QDir::Dirs | QDir::NoDotAndDotDot);
+    for (const QString& userDir : userDirs) {
+        QString localConfigPath = userdataDir.filePath(userDir + "/config/localconfig.vdf");
+        if (!fileExists(localConfigPath)) {
+            continue;
+        }
+        
+        QJsonObject configData = parseVDF(localConfigPath);
+        if (configData.isEmpty()) {
+            continue;
+        }
+        
+        // Navigate to Software/Valve/Steam/Apps/[appId]
+        QJsonObject software = configData["Software"].toObject();
+        QJsonObject valve = software["Valve"].toObject();
+        QJsonObject steam = valve["Steam"].toObject();
+        QJsonObject apps = steam["Apps"].toObject();
+        QJsonObject app = apps[appId].toObject();
+        
+        if (!app.isEmpty()) {
+            QString playtimeStr = app["Playtime"].toString();
+            bool ok;
+            qint64 playtimeMinutes = playtimeStr.toLongLong(&ok);
+            if (ok) {
+                return playtimeMinutes;
+            }
+        }
+    }
+    
+    return 0;
+}
+
+QDateTime SteamDetector::getLastPlayedDate(const QString& appId) const
+{
+    QString steamPath = getSteamInstallPath();
+    if (steamPath.isEmpty()) {
+        return QDateTime();
+    }
+    
+    QDir userdataDir(QDir(steamPath).filePath("userdata"));
+    if (!userdataDir.exists()) {
+        return QDateTime();
+    }
+    
+    QStringList userDirs = userdataDir.entryList(QDir::Dirs | QDir::NoDotAndDotDot);
+    for (const QString& userDir : userDirs) {
+        QString localConfigPath = userdataDir.filePath(userDir + "/config/localconfig.vdf");
+        if (!fileExists(localConfigPath)) {
+            continue;
+        }
+        
+        QJsonObject configData = parseVDF(localConfigPath);
+        if (configData.isEmpty()) {
+            continue;
+        }
+        
+        QJsonObject software = configData["Software"].toObject();
+        QJsonObject valve = software["Valve"].toObject();
+        QJsonObject steam = valve["Steam"].toObject();
+        QJsonObject apps = steam["Apps"].toObject();
+        QJsonObject app = apps[appId].toObject();
+        
+        if (!app.isEmpty()) {
+            QString lastPlayedStr = app["LastPlayed"].toString();
+            bool ok;
+            qint64 timestamp = lastPlayedStr.toLongLong(&ok);
+            if (ok && timestamp > 0) {
+                return QDateTime::fromSecsSinceEpoch(timestamp);
+            }
+        }
+    }
+    
+    return QDateTime();
+}
+
+SteamDetector::SteamAppManifest SteamDetector::parseAppManifest(const QString& manifestPath) const
+{
+    SteamAppManifest manifest;
+    
+    QJsonObject manifestData = parseVDF(manifestPath);
+    if (manifestData.isEmpty()) {
+        return manifest;
+    }
+    
+    QJsonObject appState = manifestData["AppState"].toObject();
+    if (appState.isEmpty()) {
+        return manifest;
+    }
+    
+    manifest.appId = appState["appid"].toString();
+    manifest.name = appState["name"].toString();
+    manifest.installDir = appState["installdir"].toString();
+    manifest.sizeOnDisk = appState["SizeOnDisk"].toString().toLongLong();
+    
+    QString lastUpdatedStr = appState["LastUpdated"].toString();
+    bool ok;
+    qint64 timestamp = lastUpdatedStr.toLongLong(&ok);
+    if (ok && timestamp > 0) {
+        manifest.lastUpdated = QDateTime::fromSecsSinceEpoch(timestamp);
+    }
+    
+    QString stateFlags = appState["StateFlags"].toString();
+    manifest.isInstalled = (stateFlags.toInt() & 0x4) != 0; // Installed flag
+    
+    return manifest;
+}
+
+QJsonObject SteamDetector::parseVDFObject(const QString& content, int& pos) const
+{
+    QJsonObject obj;
+    
+    // Skip whitespace and opening brace
+    while (pos < content.length() && content[pos].isSpace()) {
+        pos++;
+    }
+    
+    if (pos >= content.length() || content[pos] != '{') {
+        return obj;
+    }
+    pos++; // Skip opening brace
+    
+    while (pos < content.length()) {
+        // Skip whitespace
+        while (pos < content.length() && content[pos].isSpace()) {
+            pos++;
+        }
+        
+        // Check for closing brace
+        if (pos >= content.length() || content[pos] == '}') {
+            pos++; // Skip closing brace
+            break;
+        }
+        
+        // Parse key
+        QString key = parseVDFString(content, pos);
+        if (key.isEmpty()) {
+            break;
+        }
+        
+        // Skip whitespace
+        while (pos < content.length() && content[pos].isSpace()) {
+            pos++;
+        }
+        
+        if (pos >= content.length()) {
+            break;
+        }
+        
+        // Check if value is an object or string
+        if (content[pos] == '{') {
+            // Nested object
+            QJsonObject nestedObj = parseVDFObject(content, pos);
+            obj[key] = nestedObj;
+        } else if (content[pos] == '"') {
+            // String value
+            QString value = parseVDFString(content, pos);
+            obj[key] = value;
+        } else {
+            // Skip invalid content
+            pos++;
+        }
+    }
+    
+    return obj;
+}
+
+QString SteamDetector::parseVDFString(const QString& content, int& pos) const
+{
+    QString result;
+    
+    // Skip whitespace
+    while (pos < content.length() && content[pos].isSpace()) {
+        pos++;
+    }
+    
+    if (pos >= content.length() || content[pos] != '"') {
+        return result;
+    }
+    pos++; // Skip opening quote
+    
+    while (pos < content.length() && content[pos] != '"') {
+        if (content[pos] == '\\' && pos + 1 < content.length()) {
+            // Handle escape sequences
+            pos++;
+            switch (content[pos].toLatin1()) {
+                case 'n': result += '\n'; break;
+                case 't': result += '\t'; break;
+                case 'r': result += '\r'; break;
+                case '\\': result += '\\'; break;
+                case '"': result += '"'; break;
+                default: result += content[pos]; break;
+            }
+        } else {
+            result += content[pos];
+        }
+        pos++;
+    }
+    
+    if (pos < content.length() && content[pos] == '"') {
+        pos++; // Skip closing quote
+    }
+    
+    return result;
+}

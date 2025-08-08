@@ -368,7 +368,7 @@ void Settings::setPlatformEnabled(const QString &platform, bool enabled)
 
 bool Settings::isPlatformEnabled(const QString &platform) const
 {
-    return m_platformSettings.value(platform, true);
+    return m_platformSettings.value(platform, true).toBool();
 }
 
 void Settings::setWindowGeometry(int width, int height, int x, int y, bool maximized)

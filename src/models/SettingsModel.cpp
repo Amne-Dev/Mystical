@@ -12,7 +12,9 @@ SettingsModel::SettingsModel(Settings* settings, QObject* parent)
     connect(m_settings, &Settings::minimizeToTrayChanged, this, &SettingsModel::minimizeToTrayChanged);
     connect(m_settings, &Settings::autoScanGamesChanged, this, &SettingsModel::autoScanGamesChanged);
     connect(m_settings, &Settings::autoScanIntervalChanged, this, &SettingsModel::autoScanIntervalChanged);
-    connect(m_settings, &Settings::settingsChanged, this, &SettingsModel::onSettingsChanged);
+    
+    // Note: Removed settingsChanged signal connection as it doesn't exist in Settings class
+    // If needed, this can be added to the Settings class later
 }
 
 bool SettingsModel::isDarkMode() const
@@ -92,12 +94,17 @@ void SettingsModel::resetToDefaults()
 
 void SettingsModel::exportSettings(const QString& filePath)
 {
-    m_settings->exportSettings(filePath);
+    // Implementation placeholder - export functionality not available in Settings class
+    Q_UNUSED(filePath)
+    qWarning() << "Export settings functionality not implemented in Settings class";
 }
 
 bool SettingsModel::importSettings(const QString& filePath)
 {
-    return m_settings->importSettings(filePath);
+    // Implementation placeholder - import functionality not available in Settings class
+    Q_UNUSED(filePath)
+    qWarning() << "Import settings functionality not implemented in Settings class";
+    return false;
 }
 
 void SettingsModel::save()
@@ -107,12 +114,21 @@ void SettingsModel::save()
 
 QVariant SettingsModel::getValue(const QString& key, const QVariant& defaultValue)
 {
-    return m_settings->getValue(key, defaultValue);
+    // This method likely needs to be implemented in the Settings class
+    // For now, provide a placeholder implementation
+    Q_UNUSED(key)
+    Q_UNUSED(defaultValue)
+    qWarning() << "getValue method not implemented in Settings class";
+    return QVariant();
 }
 
 void SettingsModel::setValue(const QString& key, const QVariant& value)
 {
-    m_settings->setValue(key, value);
+    // This method likely needs to be implemented in the Settings class
+    // For now, provide a placeholder implementation
+    Q_UNUSED(key)
+    Q_UNUSED(value)
+    qWarning() << "setValue method not implemented in Settings class";
 }
 
 void SettingsModel::onSettingsChanged()

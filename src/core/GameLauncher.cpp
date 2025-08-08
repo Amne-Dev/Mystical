@@ -373,3 +373,50 @@ bool GameLauncher::isProcessRunning(const QString& processName) const
     return false;
 #endif
 }
+
+void GameLauncher::terminateAllGames()
+{
+    qInfo(gameLauncher) << "Terminating all running games...";
+    
+    QList<QString> gameKeys = m_runningGames.keys();
+    for (const QString& gameKey : gameKeys) {
+        const RunningGameInfo& runningInfo = m_runningGames[gameKey];
+        
+        if (runningInfo.process && runningInfo.process->state() == QProcess::Running) {
+            runningInfo.process->terminate();
+            if (!runningInfo.process->waitForFinished(3000)) {
+                runningInfo.process->kill();
+                runningInfo.process->waitForFinished(1000);
+            }
+        } else {
+            // Try to terminate by process name
+            terminateGameByName(runningInfo.gameInfo.title());
+        }
+        
+        // Calculate session time
+        qint64 sessionMinutes = runningInfo.startTime.secsTo(QDateTime::currentDateTime()) / 60;
+        emit gameTerminated(runningInfo.gameInfo, sessionMinutes);
+    }
+    
+    // Clear all running games
+    for (auto it = m_runningGames.begin(); it != m_runningGames.end(); ++it) {
+        if (it.value().process) {
+            it.value().process->deleteLater();
+        }
+    }
+    m_runningGames.clear();
+    
+    emit runningGamesChanged();
+    qInfo(gameLauncher) << "All games terminated";
+}
+
+void GameLauncher::refreshRunningGames()
+{
+    qInfo(gameLauncher) << "Refreshing running games list...";
+    
+    // Force a check of all running games
+    monitorRunningGames();
+    
+    emit runningGamesChanged();
+    qInfo(gameLauncher) << "Running games refreshed. Currently running:" << m_runningGames.size();
+}
