@@ -1,0 +1,272 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="Mystical.WinUI.Views.SettingsPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <ScrollViewer Padding="20">
+        <StackPanel Spacing="12">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <TextBlock Style="{StaticResource MysticalTitleStyle}" Text="Settings" />
+                <Button
+                    Grid.Column="1"
+                    Click="OnHelpTopicClicked"
+                    Style="{StaticResource MysticalInfoIconButtonStyle}"
+                    Tag="settings"
+                    ToolTipService.ToolTip="Settings help"
+                    VerticalAlignment="Center">
+                    <FontIcon Glyph="&#xE946;" />
+                </Button>
+            </Grid>
+            <TextBlock Style="{StaticResource MysticalSubtleTextStyle}" Text="Control startup behavior, scanning cadence, and cover-art policy." />
+
+            <Border
+                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                BorderThickness="1"
+                CornerRadius="12"
+                Padding="14">
+                <StackPanel Spacing="10">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock FontFamily="Segoe UI Variable Display" FontSize="18" Text="Appearance" />
+                        <Button
+                            Grid.Column="1"
+                            Click="OnHelpTopicClicked"
+                            Style="{StaticResource MysticalInfoIconButtonStyle}"
+                            Tag="settings"
+                            ToolTipService.ToolTip="Appearance help"
+                            VerticalAlignment="Center">
+                            <FontIcon Glyph="&#xE946;" />
+                        </Button>
+                    </Grid>
+                    <ToggleSwitch
+                        Header="Use dark theme"
+                        IsOn="{Binding UseDarkTheme, Mode=TwoWay}" />
+                </StackPanel>
+            </Border>
+
+            <Border
+                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                BorderThickness="1"
+                CornerRadius="12"
+                Padding="14">
+                <StackPanel Spacing="10">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock FontFamily="Segoe UI Variable Display" FontSize="18" Text="Library" />
+                        <Button
+                            Grid.Column="1"
+                            Click="OnHelpTopicClicked"
+                            Style="{StaticResource MysticalInfoIconButtonStyle}"
+                            Tag="sources"
+                            ToolTipService.ToolTip="Library source help"
+                            VerticalAlignment="Center">
+                            <FontIcon Glyph="&#xE946;" />
+                        </Button>
+                    </Grid>
+                    <TextBlock Style="{StaticResource MysticalSubtleTextStyle}" Text="Choose which platforms are scanned for games." />
+                    <ToggleSwitch
+                        Header="Import from Steam"
+                        IsOn="{Binding EnableSteamImport, Mode=TwoWay}" />
+                    <ToggleSwitch
+                        Header="Import from Epic"
+                        IsOn="{Binding EnableEpicImport, Mode=TwoWay}" />
+                    <ToggleSwitch
+                        Header="Import from Xbox app / Microsoft Store"
+                        IsOn="{Binding EnableXboxImport, Mode=TwoWay}" />
+                    <ToggleSwitch
+                        Header="Import from GOG"
+                        IsOn="{Binding EnableGogImport, Mode=TwoWay}" />
+                    <ToggleSwitch
+                        Header="Auto scan games"
+                        IsOn="{Binding AutoScanGames, Mode=TwoWay}" />
+                    <NumberBox
+                        Header="Auto scan interval (minutes)"
+                        Minimum="5"
+                        SmallChange="5"
+                        SpinButtonPlacementMode="Compact"
+                        Value="{Binding AutoScanIntervalMinutes, Mode=TwoWay}" />
+                    <ToggleSwitch
+                        Header="Allow online cover art"
+                        IsOn="{Binding OnlineCoverArt, Mode=TwoWay}" />
+                    <TextBox
+                        Header="IGDB Client ID (for cover enrichment)"
+                        PlaceholderText="Optional: from Twitch Developer Console"
+                        Text="{Binding IgdbClientId, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                    <TextBox
+                        Header="IGDB Client Secret (for cover enrichment)"
+                        PlaceholderText="Optional: from Twitch Developer Console"
+                        Text="{Binding IgdbClientSecret, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                    <TextBlock
+                        Style="{StaticResource MysticalSubtleTextStyle}"
+                        Text="IGDB keys are optional. They improve cover consistency but do not affect game import or launcher functionality." />
+                    <Button
+                        Click="OnHelpTopicClicked"
+                        Content="IGDB setup help"
+                        HorizontalAlignment="Left"
+                        Style="{StaticResource MysticalToolbarButtonStyle}"
+                        Tag="igdb-create" />
+                </StackPanel>
+            </Border>
+
+            <Border
+                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                BorderThickness="1"
+                CornerRadius="12"
+                Padding="14">
+                <StackPanel Spacing="10">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock FontFamily="Segoe UI Variable Display" FontSize="18" Text="Accounts" />
+                        <Button
+                            Grid.Column="1"
+                            Click="OnHelpTopicClicked"
+                            Style="{StaticResource MysticalInfoIconButtonStyle}"
+                            Tag="steam-connect"
+                            ToolTipService.ToolTip="Accounts help"
+                            VerticalAlignment="Center">
+                            <FontIcon Glyph="&#xE946;" />
+                        </Button>
+                    </Grid>
+
+                    <ToggleSwitch
+                        Header="Enable Steam account library sync"
+                        IsOn="{Binding EnableSteamAccountSync, Mode=TwoWay}" />
+                    <Button
+                        Command="{Binding ConnectSteamCommand}"
+                        HorizontalAlignment="Left"
+                        Visibility="{Binding SteamConnectVisibility}"
+                        Style="{StaticResource MysticalToolbarButtonStyle}">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <FontIcon Glyph="&#xE8FB;" />
+                            <TextBlock Text="Connect Steam" />
+                        </StackPanel>
+                    </Button>
+                    <Button
+                        Command="{Binding DisconnectSteamCommand}"
+                        HorizontalAlignment="Left"
+                        Visibility="{Binding SteamDisconnectVisibility}"
+                        Style="{StaticResource MysticalToolbarButtonStyle}">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <FontIcon Glyph="&#xE711;" />
+                            <TextBlock Text="Disconnect Steam" />
+                        </StackPanel>
+                    </Button>
+                    <TextBox
+                        Header="Steam API key (optional)"
+                        PlaceholderText="Optional: improves reliability for private/public profile fetch"
+                        Text="{Binding SteamApiKey, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                    <TextBox
+                        Header="SteamID64 or profile URL (optional)"
+                        PlaceholderText="Auto-detected from local Steam login when left blank"
+                        Text="{Binding SteamUserId, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+
+                    <ToggleSwitch
+                        Header="Enable Epic account cache sync"
+                        IsOn="{Binding EnableEpicAccountSync, Mode=TwoWay}" />
+                    <Button
+                        Click="OnConnectEpicClicked"
+                        HorizontalAlignment="Left"
+                        Visibility="{Binding EpicConnectVisibility}"
+                        Style="{StaticResource MysticalToolbarButtonStyle}">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <FontIcon Glyph="&#xE8FA;" />
+                            <TextBlock Text="Connect Epic" />
+                        </StackPanel>
+                    </Button>
+                    <Button
+                        Command="{Binding DisconnectEpicCommand}"
+                        HorizontalAlignment="Left"
+                        Visibility="{Binding EpicDisconnectVisibility}"
+                        Style="{StaticResource MysticalToolbarButtonStyle}">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <FontIcon Glyph="&#xE711;" />
+                            <TextBlock Text="Disconnect Epic" />
+                        </StackPanel>
+                    </Button>
+                    <TextBox
+                        Header="Epic manifests path override (optional)"
+                        PlaceholderText="%ProgramData%\\Epic\\EpicGamesLauncher\\Data\\Manifests"
+                        Text="{Binding EpicManifestPathOverride, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+
+                    <TextBlock
+                        Style="{StaticResource MysticalSubtleTextStyle}"
+                        Text="Use Connect buttons for one-click account linking. Manual fields below are optional advanced overrides." />
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <Button
+                            Click="OnHelpTopicClicked"
+                            Content="Steam linking help"
+                            HorizontalAlignment="Left"
+                            Style="{StaticResource MysticalToolbarButtonStyle}"
+                            Tag="steam-connect" />
+                        <Button
+                            Click="OnHelpTopicClicked"
+                            Content="Epic linking help"
+                            HorizontalAlignment="Left"
+                            Style="{StaticResource MysticalToolbarButtonStyle}"
+                            Tag="epic-connect" />
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
+            <Border
+                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                BorderThickness="1"
+                CornerRadius="12"
+                Padding="14">
+                <StackPanel Spacing="10">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock FontFamily="Segoe UI Variable Display" FontSize="18" Text="System" />
+                        <Button
+                            Grid.Column="1"
+                            Click="OnHelpTopicClicked"
+                            Style="{StaticResource MysticalInfoIconButtonStyle}"
+                            Tag="settings"
+                            ToolTipService.ToolTip="System settings help"
+                            VerticalAlignment="Center">
+                            <FontIcon Glyph="&#xE946;" />
+                        </Button>
+                    </Grid>
+                    <ToggleSwitch
+                        Header="Start with Windows"
+                        IsOn="{Binding StartWithWindows, Mode=TwoWay}" />
+                </StackPanel>
+            </Border>
+
+            <StackPanel Orientation="Horizontal" Spacing="8">
+                <Button Command="{Binding SaveCommand}" Content="Save + Cover Refresh" />
+                <Button Command="{Binding ResetCommand}" Content="Reset" />
+                <Button Command="{Binding ResetDatabaseCommand}" Content="Reset Database" />
+                <Button Command="{Binding ResetAppDataCommand}" Content="Reset App Data" />
+            </StackPanel>
+
+            <TextBlock
+                Style="{StaticResource MysticalSubtleTextStyle}"
+                Text="{Binding StatusMessage}" />
+        </StackPanel>
+    </ScrollViewer>
+</Page>

@@ -1,0 +1,17 @@
+# IDE
+.vs/
+*.suo
+*.user
+
+# CMake/Qt build outputs
+build/
+cmake-build-*/
+
+# .NET/WinUI build outputs
+bin/
+obj/
+**/bin/
+**/obj/
+
+# General
+*.log

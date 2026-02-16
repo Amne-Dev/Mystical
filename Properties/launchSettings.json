@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "Mystical.WinUI (Package)": {
+      "commandName": "MsixPackage"
+    },
+    "Mystical.WinUI (Unpackaged)": {
+      "commandName": "Project"
+    }
+  }
+}

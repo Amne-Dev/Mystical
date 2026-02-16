@@ -1,0 +1,455 @@
+:root {
+  --bg-0: #0d1116;
+  --bg-1: #121a22;
+  --bg-2: #1b2733;
+  --text: #f4f7fb;
+  --text-muted: #c7d2de;
+  --border: rgba(255, 255, 255, 0.12);
+  --card: rgba(255, 255, 255, 0.07);
+  --accent: #90d4c7;
+  --accent-strong: #69bead;
+  --max-width: 1080px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: "Segoe UI", "Segoe UI Variable Text", "Helvetica Neue", sans-serif;
+  background:
+    radial-gradient(900px 500px at 10% 0%, #243342 0%, transparent 60%),
+    radial-gradient(700px 400px at 100% 0%, #1f2b37 0%, transparent 60%),
+    linear-gradient(120deg, var(--bg-0), var(--bg-1), var(--bg-2));
+  color: var(--text);
+  min-height: 100vh;
+}
+
+.top-nav,
+main,
+footer {
+  width: min(var(--max-width), calc(100% - 32px));
+  margin: 0 auto;
+}
+
+.top-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px 0;
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--text);
+  text-decoration: none;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+}
+
+.brand img {
+  width: 24px;
+  height: 24px;
+  border-radius: 7px;
+  box-shadow: 0 0 0 1px var(--border);
+}
+
+nav {
+  display: flex;
+  gap: 14px;
+}
+
+nav a {
+  color: var(--text-muted);
+  text-decoration: none;
+  font-size: 14px;
+}
+
+nav a:hover,
+nav a[aria-current="page"] {
+  color: var(--text);
+}
+
+.hero {
+  margin-top: 16px;
+  padding: 42px;
+  border-radius: 22px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  backdrop-filter: blur(16px);
+}
+
+.kicker {
+  margin: 0;
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+h1 {
+  margin: 14px 0 0;
+  font-size: clamp(30px, 5vw, 52px);
+  line-height: 1.1;
+}
+
+.lead {
+  margin: 16px 0 0;
+  max-width: 760px;
+  color: var(--text-muted);
+  font-size: 18px;
+  line-height: 1.6;
+}
+
+.hero-actions {
+  margin-top: 24px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 42px;
+  padding: 0 16px;
+  border-radius: 12px;
+  text-decoration: none;
+  font-weight: 600;
+  border: 1px solid transparent;
+}
+
+.btn-primary {
+  background: var(--accent);
+  color: #102229;
+}
+
+.btn-primary:hover {
+  background: var(--accent-strong);
+}
+
+.btn-secondary {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: var(--border);
+  color: var(--text);
+}
+
+.grid {
+  margin: 24px 0 10px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.tree-section {
+  margin-top: 18px;
+}
+
+.tree-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 22px;
+  backdrop-filter: blur(14px);
+}
+
+.tree-card h2 {
+  margin: 0;
+  font-size: 24px;
+}
+
+.tree-lead {
+  margin: 8px 0 18px;
+  color: var(--text-muted);
+}
+
+.launcher-tree {
+  position: relative;
+  min-height: 330px;
+  border-radius: 14px;
+  background: rgba(0, 0, 0, 0.14);
+  border: 1px solid var(--border);
+}
+
+.tree-node {
+  position: absolute;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 42px;
+  padding: 0 14px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.07);
+  color: var(--text);
+  text-decoration: none;
+  white-space: nowrap;
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.24);
+  will-change: transform;
+}
+
+.tree-node img {
+  width: 16px;
+  height: 16px;
+}
+
+.tree-center {
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  min-height: 64px;
+  padding: 0 22px;
+  background: rgba(144, 212, 199, 0.18);
+  border-color: rgba(144, 212, 199, 0.5);
+  font-weight: 700;
+  font-size: 18px;
+  box-shadow: 0 16px 36px rgba(105, 190, 173, 0.3);
+  animation: floatCenter 6.4s ease-in-out infinite;
+}
+
+.tree-center img {
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+}
+
+.tree-branch::before {
+  content: "";
+  position: absolute;
+  z-index: 1;
+  border-radius: 99px;
+  background:
+    linear-gradient(90deg, rgba(255, 255, 255, 0) 0%, rgba(197, 255, 243, 0.95) 50%, rgba(255, 255, 255, 0) 100%) no-repeat,
+    linear-gradient(90deg, rgba(144, 212, 199, 0.18), rgba(144, 212, 199, 0.5), rgba(144, 212, 199, 0.18));
+  background-size: 36px 100%, 100% 100%;
+}
+
+.tree-branch {
+  animation: floatBranch 5.8s ease-in-out infinite;
+}
+
+.tree-node:hover {
+  animation-play-state: paused;
+  box-shadow: 0 16px 34px rgba(0, 0, 0, 0.36);
+}
+
+.steam { top: 10%; left: 10%; animation-delay: 0.15s; }
+.steam::before {
+  width: 122px;
+  height: 2px;
+  top: 50%;
+  left: calc(100% + 2px);
+  transform: rotate(17deg);
+  transform-origin: left center;
+  animation: lineSweep 4.7s ease-in-out infinite;
+  animation-delay: 0.1s;
+}
+
+.epic { top: 10%; right: 10%; animation-delay: 0.8s; }
+.epic::before {
+  width: 132px;
+  height: 2px;
+  top: 50%;
+  right: calc(100% + 2px);
+  transform: rotate(-17deg);
+  transform-origin: right center;
+  animation: lineSweepReverse 4.9s ease-in-out infinite;
+  animation-delay: 0.6s;
+}
+
+.gog { top: 44%; left: 4%; animation-delay: 1.3s; }
+.gog::before {
+  width: 154px;
+  height: 2px;
+  top: 50%;
+  left: calc(100% + 2px);
+  animation: lineSweep 5.3s ease-in-out infinite;
+  animation-delay: 1.1s;
+}
+
+.xbox { top: 44%; right: 4%; animation-delay: 2s; }
+.xbox::before {
+  width: 154px;
+  height: 2px;
+  top: 50%;
+  right: calc(100% + 2px);
+  animation: lineSweepReverse 5.6s ease-in-out infinite;
+  animation-delay: 1.8s;
+}
+
+.msstore { bottom: 10%; left: 11%; animation-delay: 2.4s; }
+.msstore::before {
+  width: 132px;
+  height: 2px;
+  top: 50%;
+  left: calc(100% + 2px);
+  transform: rotate(-17deg);
+  transform-origin: left center;
+  animation: lineSweep 5.1s ease-in-out infinite;
+  animation-delay: 2.3s;
+}
+
+.minecraft { bottom: 10%; right: 11%; animation-delay: 3s; }
+.minecraft::before {
+  width: 122px;
+  height: 2px;
+  top: 50%;
+  right: calc(100% + 2px);
+  transform: rotate(17deg);
+  transform-origin: right center;
+  animation: lineSweepReverse 5.5s ease-in-out infinite;
+  animation-delay: 2.8s;
+}
+
+.grid .card {
+  animation: floatCard 6.2s ease-in-out infinite;
+  will-change: transform;
+}
+
+.grid .card:nth-child(2) {
+  animation-delay: 0.9s;
+}
+
+.grid .card:nth-child(3) {
+  animation-delay: 1.8s;
+}
+
+@keyframes floatCard {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+@keyframes floatBranch {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-7px); }
+}
+
+@keyframes floatCenter {
+  0%, 100% { transform: translate(-50%, -50%) translateY(0); }
+  50% { transform: translate(-50%, -50%) translateY(-10px); }
+}
+
+@keyframes lineSweep {
+  0%, 30% {
+    background-position: -42px 0, 0 0;
+  }
+  62%, 100% {
+    background-position: calc(100% + 42px) 0, 0 0;
+  }
+}
+
+@keyframes lineSweepReverse {
+  0%, 30% {
+    background-position: calc(100% + 42px) 0, 0 0;
+  }
+  62%, 100% {
+    background-position: -42px 0, 0 0;
+  }
+}
+
+.card,
+.legal {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 22px;
+  backdrop-filter: blur(14px);
+}
+
+.card h2 {
+  margin: 0 0 8px;
+  font-size: 20px;
+}
+
+.card p,
+.legal p {
+  margin: 0;
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+
+.legal {
+  margin-top: 12px;
+}
+
+.legal h1 {
+  margin-top: 0;
+}
+
+.legal h2 {
+  margin: 24px 0 8px;
+  font-size: 20px;
+}
+
+footer {
+  padding: 20px 0 26px;
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+@media (max-width: 880px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+
+  .hero {
+    padding: 28px;
+  }
+
+  .launcher-tree {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    min-height: unset;
+    padding: 12px;
+  }
+
+  .tree-node {
+    position: static;
+    animation: none;
+    transform: none;
+  }
+
+  .tree-center {
+    grid-column: 1 / -1;
+    animation: none;
+    transform: none;
+  }
+
+  .tree-branch::before {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .grid .card,
+  .tree-branch,
+  .tree-center,
+  .tree-branch::before {
+    animation: none;
+  }
+}
+
+@media (max-width: 640px) {
+  .top-nav {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  nav {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+
+  .lead {
+    font-size: 16px;
+  }
+}

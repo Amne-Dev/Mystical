@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="Mystical.WinUI.Views.HelpSectionPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <ScrollViewer Padding="18">
+        <StackPanel Spacing="12">
+            <TextBlock
+                Style="{StaticResource MysticalTitleStyle}"
+                Text="{Binding NumberedTitle}"
+                TextWrapping="WrapWholeWords" />
+            <TextBlock
+                Style="{StaticResource MysticalSubtleTextStyle}"
+                Text="{Binding Summary}"
+                TextWrapping="WrapWholeWords" />
+
+            <ItemsControl
+                Visibility="{Binding LinksVisibility}"
+                ItemsSource="{Binding Links}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <HyperlinkButton
+                            Click="OnDocLinkClicked"
+                            Content="{Binding Label}"
+                            HorizontalAlignment="Left"
+                            Tag="{Binding Url}" />
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+
+            <ItemsControl ItemsSource="{Binding Subsections}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Border
+                            Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                            BorderThickness="1"
+                            CornerRadius="12"
+                            Padding="12"
+                            Margin="0,2">
+                            <StackPanel Spacing="8">
+                                <TextBlock
+                                    FontFamily="Segoe UI Variable Display"
+                                    FontSize="19"
+                                    Text="{Binding NumberedTitle}"
+                                    TextWrapping="WrapWholeWords" />
+
+                                <ItemsControl ItemsSource="{Binding Steps}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <TextBlock
+                                                Text="{Binding}"
+                                                TextWrapping="WrapWholeWords" />
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+
+                                <TextBlock
+                                    Style="{StaticResource MysticalSubtleTextStyle}"
+                                    Text="{Binding Note}"
+                                    TextWrapping="WrapWholeWords"
+                                    Visibility="{Binding NoteVisibility}" />
+
+                                <ItemsControl
+                                    ItemsSource="{Binding Links}"
+                                    Visibility="{Binding LinksVisibility}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <HyperlinkButton
+                                                Click="OnDocLinkClicked"
+                                                Content="{Binding Label}"
+                                                HorizontalAlignment="Left"
+                                                Tag="{Binding Url}" />
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </StackPanel>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </StackPanel>
+    </ScrollViewer>
+</Page>

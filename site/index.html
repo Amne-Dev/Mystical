@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Mystical | Unified PC Game Library</title>
+  <meta name="description" content="Mystical is a Windows 11 launcher that unifies your Steam, Epic, GOG, Xbox app, and Microsoft Store libraries.">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="top-nav">
+    <a class="brand" href="./">
+      <img src="assets/logo.png" alt="Mystical logo">
+      <span>Mystical</span>
+    </a>
+    <nav>
+      <a href="./">Home</a>
+      <a href="./privacy.html">Privacy</a>
+      <a href="https://github.com/" target="_blank" rel="noopener noreferrer">GitHub</a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="hero">
+      <p class="kicker">Windows 11 App</p>
+      <h1>One launcher for your whole PC game library</h1>
+      <p class="lead">
+        Mystical brings together Steam, Epic, GOG, Xbox app, and Microsoft Store games in one fluent desktop experience.
+      </p>
+      <div class="hero-actions">
+        <a class="btn btn-primary" href="https://www.microsoft.com/store/apps/9P762H6CTJ3Q" target="_blank" rel="noopener noreferrer">Get on Microsoft Store</a>
+        <a class="btn btn-secondary" href="./privacy.html">Privacy Policy</a>
+      </div>
+    </section>
+
+    <section class="tree-section">
+      <div class="tree-card">
+        <h2>All your launchers, connected</h2>
+        <p class="tree-lead">Mystical sits in the middle and links every major PC game source.</p>
+        <div class="launcher-tree" aria-label="Launcher connection tree">
+          <a class="tree-node tree-center" href="./">
+            <img src="assets/logo.png" alt="Mystical logo">
+            <span>Mystical</span>
+          </a>
+          <a class="tree-node tree-branch steam" href="https://store.steampowered.com" target="_blank" rel="noopener noreferrer">
+            <img src="assets/launchers/steam.svg" alt="" aria-hidden="true">
+            <span>Steam</span>
+          </a>
+          <a class="tree-node tree-branch epic" href="https://store.epicgames.com" target="_blank" rel="noopener noreferrer">
+            <img src="assets/launchers/epic.svg" alt="" aria-hidden="true">
+            <span>Epic Games</span>
+          </a>
+          <a class="tree-node tree-branch gog" href="https://www.gog.com" target="_blank" rel="noopener noreferrer">
+            <img src="assets/launchers/gog.svg" alt="" aria-hidden="true">
+            <span>GOG</span>
+          </a>
+          <a class="tree-node tree-branch xbox" href="https://www.xbox.com/apps/xbox-app-for-pc" target="_blank" rel="noopener noreferrer">
+            <img src="assets/launchers/xbox.svg" alt="" aria-hidden="true">
+            <span>Xbox App</span>
+          </a>
+          <a class="tree-node tree-branch msstore" href="https://apps.microsoft.com" target="_blank" rel="noopener noreferrer">
+            <img src="assets/launchers/msstore.svg" alt="" aria-hidden="true">
+            <span>Microsoft Store</span>
+          </a>
+          <a class="tree-node tree-branch minecraft" href="https://www.minecraft.net/download" target="_blank" rel="noopener noreferrer">
+            <img src="assets/launchers/minecraft.svg" alt="" aria-hidden="true">
+            <span>Minecraft</span>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <section class="grid">
+      <article class="card">
+        <h2>Unified library</h2>
+        <p>See installed and owned games across launchers in one searchable collection.</p>
+      </article>
+      <article class="card">
+        <h2>Cover art</h2>
+        <p>Automatic cover retrieval with optional IGDB support for more consistent artwork.</p>
+      </article>
+      <article class="card">
+        <h2>Deals and updates</h2>
+        <p>Track free offers, discounts, and updates without opening every launcher manually.</p>
+      </article>
+    </section>
+  </main>
+
+  <footer>
+    <p>&copy; <span id="year"></span> Amne-Dev. Mystical.</p>
+  </footer>
+
+  <script src="main.js"></script>
+</body>
+</html>
