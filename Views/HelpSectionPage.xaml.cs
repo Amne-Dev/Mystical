@@ -7,6 +7,29 @@ namespace Mystical.WinUI.Views;
 
 public sealed partial class HelpSectionPage : Page
 {
+    public HelpDocSection? Section { get; private set; }
+
+    private void WireCollections()
+    {
+        if (Section is null)
+        {
+            return;
+        }
+        
+        // Avoid ItemsSource assignment to bypass failing WinRT set_ItemsSource path.
+        LinksItemsControl.Items.Clear();
+        foreach (var link in Section.Links)
+        {
+            LinksItemsControl.Items.Add(link);
+        }
+
+        SubsectionsItemsControl.Items.Clear();
+        foreach (var subsection in Section.Subsections)
+        {
+            SubsectionsItemsControl.Items.Add(subsection);
+        }
+    }
+
     public HelpSectionPage()
     {
         InitializeComponent();
@@ -15,7 +38,9 @@ public sealed partial class HelpSectionPage : Page
     protected override void OnNavigatedTo(NavigationEventArgs e)
     {
         base.OnNavigatedTo(e);
-        DataContext = e.Parameter as HelpDocSection;
+        Section = e.Parameter as HelpDocSection;
+        Bindings.Update();
+        WireCollections();
     }
 
     private async void OnDocLinkClicked(object sender, RoutedEventArgs e)

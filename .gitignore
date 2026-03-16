@@ -15,3 +15,5 @@ obj/
 
 # General
 *.log
+/.local-signing
+/AppPackages/LocalSigned

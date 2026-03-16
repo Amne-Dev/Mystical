@@ -11,16 +11,16 @@
         <StackPanel Spacing="12">
             <TextBlock
                 Style="{StaticResource MysticalTitleStyle}"
-                Text="{Binding NumberedTitle}"
+                Text="{x:Bind Section.NumberedTitle, Mode=OneWay}"
                 TextWrapping="WrapWholeWords" />
             <TextBlock
                 Style="{StaticResource MysticalSubtleTextStyle}"
-                Text="{Binding Summary}"
+                Text="{x:Bind Section.Summary, Mode=OneWay}"
                 TextWrapping="WrapWholeWords" />
 
             <ItemsControl
-                Visibility="{Binding LinksVisibility}"
-                ItemsSource="{Binding Links}">
+                x:Name="LinksItemsControl"
+                Visibility="{x:Bind Section.LinksVisibility, Mode=OneWay}">
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
                         <HyperlinkButton
@@ -32,7 +32,7 @@
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
 
-            <ItemsControl ItemsSource="{Binding Subsections}">
+            <ItemsControl x:Name="SubsectionsItemsControl">
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
                         <Border

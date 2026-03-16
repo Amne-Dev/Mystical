@@ -11,11 +11,50 @@ public sealed partial class LibraryPage : Page
 {
     public MainViewModel ViewModel { get; }
 
+    private void RebuildFilterItems()
+    {
+        PlatformFiltersComboBox.Items.Clear();
+        foreach (var filter in ViewModel.PlatformFilters)
+        {
+            PlatformFiltersComboBox.Items.Add(filter);
+        }
+
+        LibraryFiltersComboBox.Items.Clear();
+        foreach (var filter in ViewModel.LibraryFilters)
+        {
+            LibraryFiltersComboBox.Items.Add(filter);
+        }
+    }
+
+    private void RebuildGameItems()
+    {
+        var selected = ViewModel.SelectedGame;
+
+        GamesGridView.Items.Clear();
+        GamesListView.Items.Clear();
+
+        foreach (var game in ViewModel.Games)
+        {
+            GamesGridView.Items.Add(game);
+            GamesListView.Items.Add(game);
+        }
+
+        GamesGridView.SelectedItem = selected;
+        GamesListView.SelectedItem = selected;
+    }
+
     public LibraryPage(MainViewModel viewModel)
     {
         ViewModel = viewModel;
         InitializeComponent();
-        DataContext = ViewModel;
+        
+        // Avoid ItemsSource assignment to bypass failing WinRT set_ItemsSource path.
+        RebuildFilterItems();
+        RebuildGameItems();
+
+        ViewModel.PlatformFilters.CollectionChanged += (_, _) => RebuildFilterItems();
+        ViewModel.LibraryFilters.CollectionChanged += (_, _) => RebuildFilterItems();
+        ViewModel.Games.CollectionChanged += (_, _) => RebuildGameItems();
     }
 
     private async void OnImportCoverClicked(object sender, RoutedEventArgs e)

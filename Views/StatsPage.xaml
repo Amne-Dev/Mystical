@@ -25,7 +25,7 @@
 
                 <Button
                     Grid.Column="1"
-                    Command="{Binding RefreshCommand}"
+                    Command="{x:Bind ViewModel.RefreshCommand}"
                     VerticalAlignment="Center">
                     <StackPanel Orientation="Horizontal" Spacing="8">
                         <SymbolIcon Symbol="Refresh" />
@@ -46,8 +46,8 @@
             </Grid>
 
             <StackPanel Orientation="Horizontal" Spacing="10">
-                <ProgressRing Height="18" Width="18" IsActive="{Binding IsLoading}" />
-                <TextBlock VerticalAlignment="Center" Text="{Binding StatusMessage}" />
+                <ProgressRing Height="18" Width="18" IsActive="{x:Bind ViewModel.IsLoading, Mode=OneWay}" />
+                <TextBlock VerticalAlignment="Center" Text="{x:Bind ViewModel.StatusMessage, Mode=OneWay}" />
             </StackPanel>
 
             <Grid ColumnSpacing="10" RowSpacing="10">
@@ -68,7 +68,7 @@
                     Style="{StaticResource MysticalGameListCardBorderStyle}">
                     <StackPanel>
                         <TextBlock Style="{StaticResource MysticalSubtleTextStyle}" Text="Total games" />
-                        <TextBlock FontFamily="Segoe UI Variable Display" FontSize="30" Text="{Binding TotalGames}" />
+                        <TextBlock FontFamily="Segoe UI Variable Display" FontSize="30" Text="{x:Bind ViewModel.TotalGames, Mode=OneWay}" />
                     </StackPanel>
                 </Border>
 
@@ -78,7 +78,7 @@
                     Style="{StaticResource MysticalGameListCardBorderStyle}">
                     <StackPanel>
                         <TextBlock Style="{StaticResource MysticalSubtleTextStyle}" Text="Installed" />
-                        <TextBlock FontFamily="Segoe UI Variable Display" FontSize="30" Text="{Binding InstalledGames}" />
+                        <TextBlock FontFamily="Segoe UI Variable Display" FontSize="30" Text="{x:Bind ViewModel.InstalledGames, Mode=OneWay}" />
                     </StackPanel>
                 </Border>
 
@@ -88,7 +88,7 @@
                     Style="{StaticResource MysticalGameListCardBorderStyle}">
                     <StackPanel>
                         <TextBlock Style="{StaticResource MysticalSubtleTextStyle}" Text="Not installed" />
-                        <TextBlock FontFamily="Segoe UI Variable Display" FontSize="30" Text="{Binding NotInstalledGames}" />
+                        <TextBlock FontFamily="Segoe UI Variable Display" FontSize="30" Text="{x:Bind ViewModel.NotInstalledGames, Mode=OneWay}" />
                     </StackPanel>
                 </Border>
 
@@ -98,7 +98,7 @@
                     Style="{StaticResource MysticalGameListCardBorderStyle}">
                     <StackPanel>
                         <TextBlock Style="{StaticResource MysticalSubtleTextStyle}" Text="Favorites" />
-                        <TextBlock FontFamily="Segoe UI Variable Display" FontSize="30" Text="{Binding FavoriteGames}" />
+                        <TextBlock FontFamily="Segoe UI Variable Display" FontSize="30" Text="{x:Bind ViewModel.FavoriteGames, Mode=OneWay}" />
                     </StackPanel>
                 </Border>
 
@@ -108,7 +108,7 @@
                     Style="{StaticResource MysticalGameListCardBorderStyle}">
                     <StackPanel>
                         <TextBlock Style="{StaticResource MysticalSubtleTextStyle}" Text="Total size" />
-                        <TextBlock FontFamily="Segoe UI Variable Display" FontSize="22" Text="{Binding TotalSizeText}" />
+                        <TextBlock FontFamily="Segoe UI Variable Display" FontSize="22" Text="{x:Bind ViewModel.TotalSizeText, Mode=OneWay}" />
                     </StackPanel>
                 </Border>
 
@@ -118,7 +118,7 @@
                     Style="{StaticResource MysticalGameListCardBorderStyle}">
                     <StackPanel>
                         <TextBlock Style="{StaticResource MysticalSubtleTextStyle}" Text="Most played" />
-                        <TextBlock FontFamily="Segoe UI Variable Display" FontSize="18" Text="{Binding MostPlayedText}" TextTrimming="CharacterEllipsis" />
+                        <TextBlock FontFamily="Segoe UI Variable Display" FontSize="18" Text="{x:Bind ViewModel.MostPlayedText, Mode=OneWay}" TextTrimming="CharacterEllipsis" />
                     </StackPanel>
                 </Border>
 
@@ -133,9 +133,9 @@
                                 FontSize="14"
                                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                 Glyph="&#xE946;"
-                                ToolTipService.ToolTip="{Binding TotalPlaytimeInfoText}" />
+                                ToolTipService.ToolTip="{x:Bind ViewModel.TotalPlaytimeInfoText, Mode=OneWay}" />
                         </StackPanel>
-                        <TextBlock FontFamily="Segoe UI Variable Display" FontSize="26" Text="{Binding TotalPlaytimeText}" />
+                        <TextBlock FontFamily="Segoe UI Variable Display" FontSize="26" Text="{x:Bind ViewModel.TotalPlaytimeText, Mode=OneWay}" />
                     </StackPanel>
                 </Border>
             </Grid>
@@ -148,7 +148,7 @@
                 Padding="12">
                 <StackPanel Spacing="8">
                     <TextBlock FontFamily="Segoe UI Variable Display" FontSize="20" Text="Platforms" />
-                    <ListView ItemsSource="{Binding PlatformBreakdown}" SelectionMode="None">
+                    <ListView x:Name="PlatformBreakdownListView" SelectionMode="None">
                         <ListView.ItemTemplate>
                             <DataTemplate>
                                 <Grid Margin="0,2">
@@ -186,12 +186,12 @@
                         <TextBlock FontFamily="Segoe UI Variable Display" FontSize="20" Text="Games Played Activity" />
                         <TextBlock
                             Style="{StaticResource MysticalSubtleTextStyle}"
-                            Text="{Binding GamesActivitySummaryText}" />
+                            Text="{x:Bind ViewModel.GamesActivitySummaryText, Mode=OneWay}" />
 
                         <GridView
+                            x:Name="GamesActivityGridView"
                             IsItemClickEnabled="False"
                             IsTabStop="False"
-                            ItemsSource="{Binding GamesActivityCells}"
                             SelectionMode="None"
                             ScrollViewer.HorizontalScrollBarVisibility="Disabled"
                             ScrollViewer.HorizontalScrollMode="Disabled"
@@ -249,12 +249,12 @@
                         <TextBlock FontFamily="Segoe UI Variable Display" FontSize="20" Text="Playtime Activity" />
                         <TextBlock
                             Style="{StaticResource MysticalSubtleTextStyle}"
-                            Text="{Binding TimeActivitySummaryText}" />
+                            Text="{x:Bind ViewModel.TimeActivitySummaryText, Mode=OneWay}" />
 
                         <GridView
+                            x:Name="TimeActivityGridView"
                             IsItemClickEnabled="False"
                             IsTabStop="False"
-                            ItemsSource="{Binding TimeActivityCells}"
                             SelectionMode="None"
                             ScrollViewer.HorizontalScrollBarVisibility="Disabled"
                             ScrollViewer.HorizontalScrollMode="Disabled"

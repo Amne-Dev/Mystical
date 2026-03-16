@@ -1,6 +1,9 @@
+using WinRT;
+
 namespace Mystical.WinUI.Models;
 
-public sealed class GameUpdateInfo
+[GeneratedBindableCustomProperty]
+public sealed partial class GameUpdateInfo
 {
     public string GameKey { get; init; } = string.Empty;
 

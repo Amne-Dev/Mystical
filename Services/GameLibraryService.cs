@@ -60,6 +60,12 @@ public sealed class GameLibraryService : IGameLibraryService
 
     public async Task<IReadOnlyList<GameInfo>> ScanAsync(CancellationToken cancellationToken = default)
     {
+        var result = await ScanForChangesAsync(cancellationToken);
+        return result.Games;
+    }
+
+    public async Task<LibraryScanResult> ScanForChangesAsync(CancellationToken cancellationToken = default)
+    {
         var settings = await _settingsService.LoadAsync();
         var detectedGames = new Dictionary<string, GameInfo>(StringComparer.OrdinalIgnoreCase);
 
@@ -109,6 +115,25 @@ public sealed class GameLibraryService : IGameLibraryService
             SanitizeLegacyCoverUrls(mergedGames);
             await PopulateMissingCoverArtFromIgdbAsync(mergedGames, settings, cancellationToken);
 
+            var diff = BuildLibraryDiff(existingGames, mergedGames);
+
+            if (!diff.HasChanges)
+            {
+                _games = existingGames
+                    .OrderByDescending(g => g.IsFavorite)
+                    .ThenBy(g => g.Title, StringComparer.OrdinalIgnoreCase)
+                    .ToList();
+
+                return new LibraryScanResult
+                {
+                    Games = _games.ToList(),
+                    HasChanges = false,
+                    AddedCount = 0,
+                    RemovedCount = 0,
+                    UpdatedCount = 0
+                };
+            }
+
             foreach (var game in mergedGames)
             {
                 await UpsertGameAsync(connection, game, cancellationToken);
@@ -129,7 +154,14 @@ public sealed class GameLibraryService : IGameLibraryService
                 .ToList();
 
             RaiseLibraryChanged();
-            return _games.ToList();
+            return new LibraryScanResult
+            {
+                Games = _games.ToList(),
+                HasChanges = true,
+                AddedCount = diff.AddedCount,
+                RemovedCount = diff.RemovedCount,
+                UpdatedCount = diff.UpdatedCount
+            };
         }
         finally
         {
@@ -498,6 +530,61 @@ public sealed class GameLibraryService : IGameLibraryService
         }
 
         return merged.Values.ToList();
+    }
+
+    private static (bool HasChanges, int AddedCount, int RemovedCount, int UpdatedCount) BuildLibraryDiff(
+        IReadOnlyList<GameInfo> existingGames,
+        IReadOnlyList<GameInfo> mergedGames)
+    {
+        var existingByKey = existingGames.ToDictionary(g => g.Key, StringComparer.OrdinalIgnoreCase);
+        var mergedByKey = mergedGames.ToDictionary(g => g.Key, StringComparer.OrdinalIgnoreCase);
+
+        var added = 0;
+        var removed = 0;
+        var updated = 0;
+
+        foreach (var key in mergedByKey.Keys)
+        {
+            if (!existingByKey.TryGetValue(key, out var existing))
+            {
+                added++;
+                continue;
+            }
+
+            if (!AreEquivalent(existing, mergedByKey[key]))
+            {
+                updated++;
+            }
+        }
+
+        foreach (var key in existingByKey.Keys)
+        {
+            if (!mergedByKey.ContainsKey(key))
+            {
+                removed++;
+            }
+        }
+
+        return (added > 0 || removed > 0 || updated > 0, added, removed, updated);
+    }
+
+    private static bool AreEquivalent(GameInfo left, GameInfo right)
+    {
+        return string.Equals(left.GameId, right.GameId, StringComparison.Ordinal) &&
+               left.Platform == right.Platform &&
+               string.Equals(left.Title, right.Title, StringComparison.Ordinal) &&
+               string.Equals(left.Description, right.Description, StringComparison.Ordinal) &&
+               string.Equals(left.InstallPath, right.InstallPath, StringComparison.Ordinal) &&
+               string.Equals(left.ExecutablePath, right.ExecutablePath, StringComparison.Ordinal) &&
+               string.Equals(left.LaunchUri, right.LaunchUri, StringComparison.Ordinal) &&
+               left.Playtime == right.Playtime &&
+               left.LastPlayed == right.LastPlayed &&
+               left.InstallDate == right.InstallDate &&
+               left.IsInstalled == right.IsInstalled &&
+               left.IsFavorite == right.IsFavorite &&
+               left.SizeBytes == right.SizeBytes &&
+               string.Equals(left.CoverArtPath, right.CoverArtPath, StringComparison.Ordinal) &&
+               string.Equals(left.CoverArtUrl, right.CoverArtUrl, StringComparison.Ordinal);
     }
 
     private static GameInfo MergeDetectedGame(GameInfo existing, GameInfo incoming)

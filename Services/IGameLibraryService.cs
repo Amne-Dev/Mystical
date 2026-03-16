@@ -10,6 +10,8 @@ public interface IGameLibraryService
 
     Task<IReadOnlyList<GameInfo>> ScanAsync(CancellationToken cancellationToken = default);
 
+    Task<LibraryScanResult> ScanForChangesAsync(CancellationToken cancellationToken = default);
+
     Task SetFavoriteAsync(string gameKey, bool isFavorite);
 
     Task<GameInfo?> MarkLaunchedAsync(string gameKey);

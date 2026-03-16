@@ -29,7 +29,7 @@
                 Grid.Column="0"
                 Height="36"
                 PlaceholderText="Search title or description"
-                Text="{Binding SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                Text="{x:Bind ViewModel.SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                 VerticalAlignment="Center">
                 <AutoSuggestBox.QueryIcon>
                     <SymbolIcon Symbol="Find" />
@@ -39,22 +39,22 @@
             <ComboBox
                 Grid.Column="1"
                 Height="36"
-                ItemsSource="{Binding PlatformFilters}"
+                x:Name="PlatformFiltersComboBox"
                 PlaceholderText="Platform"
-                SelectedItem="{Binding SelectedPlatform, Mode=TwoWay}"
+                SelectedItem="{x:Bind ViewModel.SelectedPlatform, Mode=TwoWay}"
                 VerticalAlignment="Center" />
 
             <ComboBox
                 Grid.Column="2"
                 Height="36"
-                ItemsSource="{Binding LibraryFilters}"
+                x:Name="LibraryFiltersComboBox"
                 PlaceholderText="Filter"
-                SelectedItem="{Binding SelectedLibraryFilter, Mode=TwoWay}"
+                SelectedItem="{x:Bind ViewModel.SelectedLibraryFilter, Mode=TwoWay}"
                 VerticalAlignment="Center" />
 
             <Button
                 Grid.Column="3"
-                Command="{Binding RefreshCommand}"
+                Command="{x:Bind ViewModel.RefreshCommand}"
                 Style="{StaticResource MysticalToolbarButtonStyle}"
                 VerticalAlignment="Center">
                 <StackPanel Orientation="Horizontal" Spacing="8">
@@ -65,13 +65,13 @@
 
             <Button
                 Grid.Column="4"
-                Command="{Binding LaunchSelectedCommand}"
-                IsEnabled="{Binding HasSelection}"
+                Command="{x:Bind ViewModel.LaunchSelectedCommand}"
+                IsEnabled="{x:Bind ViewModel.HasSelection, Mode=OneWay}"
                 Style="{StaticResource MysticalToolbarButtonStyle}"
                 VerticalAlignment="Center">
                 <StackPanel Orientation="Horizontal" Spacing="8">
                     <FontIcon Glyph="&#xE768;" />
-                    <TextBlock Text="{Binding PrimaryActionText}" />
+                    <TextBlock Text="{x:Bind ViewModel.PrimaryActionText, Mode=OneWay}" />
                 </StackPanel>
             </Button>
 
@@ -81,13 +81,13 @@
                 Spacing="4"
                 VerticalAlignment="Center">
                 <ToggleButton
-                    IsChecked="{Binding IsGridViewSelected, Mode=TwoWay}"
+                    IsChecked="{x:Bind ViewModel.IsGridViewSelected, Mode=TwoWay}"
                     Style="{StaticResource MysticalViewModeToggleStyle}"
                     ToolTipService.ToolTip="Grid view">
                     <SymbolIcon Symbol="AllApps" />
                 </ToggleButton>
                 <ToggleButton
-                    IsChecked="{Binding IsListViewSelected, Mode=TwoWay}"
+                    IsChecked="{x:Bind ViewModel.IsListViewSelected, Mode=TwoWay}"
                     Style="{StaticResource MysticalViewModeToggleStyle}"
                     ToolTipService.ToolTip="List view">
                     <SymbolIcon Symbol="Bullets" />
@@ -122,19 +122,19 @@
 
                 <ProgressRing
                     Height="18"
-                    IsActive="{Binding IsScanning}"
+                    IsActive="{x:Bind ViewModel.IsScanning, Mode=OneWay}"
                     VerticalAlignment="Center"
                     Width="18" />
 
                 <StackPanel Grid.Column="1">
-                    <TextBlock Text="{Binding StatusMessage}" />
-                    <TextBlock Style="{StaticResource MysticalSubtleTextStyle}" Text="{Binding SelectedGameSubtitle}" />
+                    <TextBlock Text="{x:Bind ViewModel.StatusMessage, Mode=OneWay}" />
+                    <TextBlock Style="{StaticResource MysticalSubtleTextStyle}" Text="{x:Bind ViewModel.SelectedGameSubtitle, Mode=OneWay}" />
                 </StackPanel>
 
                 <Button
                     Grid.Column="2"
-                    Command="{Binding ToggleFavoriteCommand}"
-                    IsEnabled="{Binding HasSelection}"
+                    Command="{x:Bind ViewModel.ToggleFavoriteCommand}"
+                    IsEnabled="{x:Bind ViewModel.HasSelection, Mode=OneWay}"
                     Style="{StaticResource MysticalToolbarButtonStyle}">
                     <StackPanel Orientation="Horizontal" Spacing="6">
                         <FontIcon Glyph="&#xE734;" />
@@ -145,7 +145,7 @@
                 <Button
                     Grid.Column="3"
                     Click="OnImportCoverClicked"
-                    IsEnabled="{Binding HasSelection}"
+                    IsEnabled="{x:Bind ViewModel.HasSelection, Mode=OneWay}"
                     Style="{StaticResource MysticalToolbarButtonStyle}">
                     <StackPanel Orientation="Horizontal" Spacing="6">
                         <FontIcon Glyph="&#xE898;" />
@@ -157,12 +157,12 @@
 
         <Grid Grid.Row="2">
             <GridView
+                x:Name="GamesGridView"
                 HorizontalAlignment="Stretch"
                 IsItemClickEnabled="False"
-                ItemsSource="{Binding Games}"
-                SelectedItem="{Binding SelectedGame, Mode=TwoWay}"
+                SelectedItem="{x:Bind ViewModel.SelectedGame, Mode=TwoWay}"
                 SelectionMode="Single"
-                Visibility="{Binding GridViewVisibility}"
+                Visibility="{x:Bind ViewModel.GridViewVisibility, Mode=OneWay}"
                 VerticalAlignment="Stretch">
                 <GridView.ItemsPanel>
                     <ItemsPanelTemplate>
@@ -263,13 +263,13 @@
             </GridView>
 
             <ListView
+                x:Name="GamesListView"
                 HorizontalAlignment="Stretch"
                 IsItemClickEnabled="False"
-                ItemsSource="{Binding Games}"
                 Padding="0"
-                SelectedItem="{Binding SelectedGame, Mode=TwoWay}"
+                SelectedItem="{x:Bind ViewModel.SelectedGame, Mode=TwoWay}"
                 SelectionMode="Single"
-                Visibility="{Binding ListViewVisibility}"
+                Visibility="{x:Bind ViewModel.ListViewVisibility, Mode=OneWay}"
                 VerticalAlignment="Stretch">
                 <ListView.ItemContainerStyle>
                     <Style TargetType="ListViewItem">
@@ -371,7 +371,7 @@
                 Padding="26"
                 VerticalAlignment="Center"
                 HorizontalAlignment="Center"
-                Visibility="{Binding EmptyStateVisibility}">
+                Visibility="{x:Bind ViewModel.EmptyStateVisibility, Mode=OneWay}">
                 <StackPanel MaxWidth="380" Spacing="10">
                     <FontIcon
                         FontSize="44"
@@ -391,7 +391,7 @@
                         TextWrapping="WrapWholeWords" />
                     <Button
                         HorizontalAlignment="Center"
-                        Command="{Binding RefreshCommand}"
+                        Command="{x:Bind ViewModel.RefreshCommand}"
                         Content="Scan Launchers" />
                 </StackPanel>
             </Border>

@@ -52,7 +52,7 @@
                     </Grid>
                     <ToggleSwitch
                         Header="Use dark theme"
-                        IsOn="{Binding UseDarkTheme, Mode=TwoWay}" />
+                        IsOn="{x:Bind ViewModel.UseDarkTheme, Mode=TwoWay}" />
                 </StackPanel>
             </Border>
 
@@ -82,36 +82,36 @@
                     <TextBlock Style="{StaticResource MysticalSubtleTextStyle}" Text="Choose which platforms are scanned for games." />
                     <ToggleSwitch
                         Header="Import from Steam"
-                        IsOn="{Binding EnableSteamImport, Mode=TwoWay}" />
+                        IsOn="{x:Bind ViewModel.EnableSteamImport, Mode=TwoWay}" />
                     <ToggleSwitch
                         Header="Import from Epic"
-                        IsOn="{Binding EnableEpicImport, Mode=TwoWay}" />
+                        IsOn="{x:Bind ViewModel.EnableEpicImport, Mode=TwoWay}" />
                     <ToggleSwitch
                         Header="Import from Xbox app / Microsoft Store"
-                        IsOn="{Binding EnableXboxImport, Mode=TwoWay}" />
+                        IsOn="{x:Bind ViewModel.EnableXboxImport, Mode=TwoWay}" />
                     <ToggleSwitch
                         Header="Import from GOG"
-                        IsOn="{Binding EnableGogImport, Mode=TwoWay}" />
+                        IsOn="{x:Bind ViewModel.EnableGogImport, Mode=TwoWay}" />
                     <ToggleSwitch
                         Header="Auto scan games"
-                        IsOn="{Binding AutoScanGames, Mode=TwoWay}" />
+                        IsOn="{x:Bind ViewModel.AutoScanGames, Mode=TwoWay}" />
                     <NumberBox
                         Header="Auto scan interval (minutes)"
                         Minimum="5"
                         SmallChange="5"
                         SpinButtonPlacementMode="Compact"
-                        Value="{Binding AutoScanIntervalMinutes, Mode=TwoWay}" />
+                        Value="{x:Bind ViewModel.AutoScanIntervalMinutes, Mode=TwoWay}" />
                     <ToggleSwitch
                         Header="Allow online cover art"
-                        IsOn="{Binding OnlineCoverArt, Mode=TwoWay}" />
+                        IsOn="{x:Bind ViewModel.OnlineCoverArt, Mode=TwoWay}" />
                     <TextBox
                         Header="IGDB Client ID (for cover enrichment)"
                         PlaceholderText="Optional: from Twitch Developer Console"
-                        Text="{Binding IgdbClientId, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                        Text="{x:Bind ViewModel.IgdbClientId, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                     <TextBox
                         Header="IGDB Client Secret (for cover enrichment)"
                         PlaceholderText="Optional: from Twitch Developer Console"
-                        Text="{Binding IgdbClientSecret, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                        Text="{x:Bind ViewModel.IgdbClientSecret, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                     <TextBlock
                         Style="{StaticResource MysticalSubtleTextStyle}"
                         Text="IGDB keys are optional. They improve cover consistency but do not affect game import or launcher functionality." />
@@ -150,11 +150,11 @@
 
                     <ToggleSwitch
                         Header="Enable Steam account library sync"
-                        IsOn="{Binding EnableSteamAccountSync, Mode=TwoWay}" />
+                        IsOn="{x:Bind ViewModel.EnableSteamAccountSync, Mode=TwoWay}" />
                     <Button
-                        Command="{Binding ConnectSteamCommand}"
+                        Command="{x:Bind ViewModel.ConnectSteamCommand}"
                         HorizontalAlignment="Left"
-                        Visibility="{Binding SteamConnectVisibility}"
+                        Visibility="{x:Bind ViewModel.SteamConnectVisibility, Mode=OneWay}"
                         Style="{StaticResource MysticalToolbarButtonStyle}">
                         <StackPanel Orientation="Horizontal" Spacing="8">
                             <FontIcon Glyph="&#xE8FB;" />
@@ -162,9 +162,9 @@
                         </StackPanel>
                     </Button>
                     <Button
-                        Command="{Binding DisconnectSteamCommand}"
+                        Command="{x:Bind ViewModel.DisconnectSteamCommand}"
                         HorizontalAlignment="Left"
-                        Visibility="{Binding SteamDisconnectVisibility}"
+                        Visibility="{x:Bind ViewModel.SteamDisconnectVisibility, Mode=OneWay}"
                         Style="{StaticResource MysticalToolbarButtonStyle}">
                         <StackPanel Orientation="Horizontal" Spacing="8">
                             <FontIcon Glyph="&#xE711;" />
@@ -174,19 +174,19 @@
                     <TextBox
                         Header="Steam API key (optional)"
                         PlaceholderText="Optional: improves reliability for private/public profile fetch"
-                        Text="{Binding SteamApiKey, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                        Text="{x:Bind ViewModel.SteamApiKey, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                     <TextBox
                         Header="SteamID64 or profile URL (optional)"
                         PlaceholderText="Auto-detected from local Steam login when left blank"
-                        Text="{Binding SteamUserId, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                        Text="{x:Bind ViewModel.SteamUserId, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
 
                     <ToggleSwitch
                         Header="Enable Epic account cache sync"
-                        IsOn="{Binding EnableEpicAccountSync, Mode=TwoWay}" />
+                        IsOn="{x:Bind ViewModel.EnableEpicAccountSync, Mode=TwoWay}" />
                     <Button
                         Click="OnConnectEpicClicked"
                         HorizontalAlignment="Left"
-                        Visibility="{Binding EpicConnectVisibility}"
+                        Visibility="{x:Bind ViewModel.EpicConnectVisibility, Mode=OneWay}"
                         Style="{StaticResource MysticalToolbarButtonStyle}">
                         <StackPanel Orientation="Horizontal" Spacing="8">
                             <FontIcon Glyph="&#xE8FA;" />
@@ -194,9 +194,9 @@
                         </StackPanel>
                     </Button>
                     <Button
-                        Command="{Binding DisconnectEpicCommand}"
+                        Command="{x:Bind ViewModel.DisconnectEpicCommand}"
                         HorizontalAlignment="Left"
-                        Visibility="{Binding EpicDisconnectVisibility}"
+                        Visibility="{x:Bind ViewModel.EpicDisconnectVisibility, Mode=OneWay}"
                         Style="{StaticResource MysticalToolbarButtonStyle}">
                         <StackPanel Orientation="Horizontal" Spacing="8">
                             <FontIcon Glyph="&#xE711;" />
@@ -206,7 +206,7 @@
                     <TextBox
                         Header="Epic manifests path override (optional)"
                         PlaceholderText="%ProgramData%\\Epic\\EpicGamesLauncher\\Data\\Manifests"
-                        Text="{Binding EpicManifestPathOverride, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                        Text="{x:Bind ViewModel.EpicManifestPathOverride, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
 
                     <TextBlock
                         Style="{StaticResource MysticalSubtleTextStyle}"
@@ -253,20 +253,20 @@
                     </Grid>
                     <ToggleSwitch
                         Header="Start with Windows"
-                        IsOn="{Binding StartWithWindows, Mode=TwoWay}" />
+                        IsOn="{x:Bind ViewModel.StartWithWindows, Mode=TwoWay}" />
                 </StackPanel>
             </Border>
 
             <StackPanel Orientation="Horizontal" Spacing="8">
-                <Button Command="{Binding SaveCommand}" Content="Save + Cover Refresh" />
-                <Button Command="{Binding ResetCommand}" Content="Reset" />
-                <Button Command="{Binding ResetDatabaseCommand}" Content="Reset Database" />
-                <Button Command="{Binding ResetAppDataCommand}" Content="Reset App Data" />
+                <Button Command="{x:Bind ViewModel.SaveCommand}" Content="Save + Cover Refresh" />
+                <Button Command="{x:Bind ViewModel.ResetCommand}" Content="Reset" />
+                <Button Command="{x:Bind ViewModel.ResetDatabaseCommand}" Content="Reset Database" />
+                <Button Command="{x:Bind ViewModel.ResetAppDataCommand}" Content="Reset App Data" />
             </StackPanel>
 
             <TextBlock
                 Style="{StaticResource MysticalSubtleTextStyle}"
-                Text="{Binding StatusMessage}" />
+                Text="{x:Bind ViewModel.StatusMessage, Mode=OneWay}" />
         </StackPanel>
     </ScrollViewer>
 </Page>

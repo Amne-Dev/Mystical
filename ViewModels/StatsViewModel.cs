@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using System.Windows.Input;
+using WinRT;
 using Mystical.WinUI.Models;
 using Mystical.WinUI.Services;
 
@@ -302,6 +303,8 @@ public sealed class StatsViewModel : ViewModelBase
     }
 }
 
-public sealed record PlatformStatItem(string Platform, int Count);
+[GeneratedBindableCustomProperty]
+public sealed partial record PlatformStatItem(string Platform, int Count);
 
-public sealed record ActivityHeatCell(DateTime Date, int Value, double HeatOpacity, string TooltipText);
+[GeneratedBindableCustomProperty]
+public sealed partial record ActivityHeatCell(DateTime Date, int Value, double HeatOpacity, string TooltipText);

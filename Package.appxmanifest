@@ -10,7 +10,7 @@
   <Identity
     Name="Amne-Dev.Mystical"
     Publisher="CN=CD782FD6-BED3-41B2-B683-1CD7F968B797"
-    Version="1.0.0.0" />
+    Version="1.0.2.0" />
 
   <mp:PhoneIdentity PhoneProductId="a995e449-c3e0-4253-8cf5-9d7bb2576548" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
 

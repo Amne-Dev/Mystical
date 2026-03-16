@@ -1,3 +1,4 @@
+using WinRT;
 using Microsoft.UI.Xaml;
 
 namespace Mystical.WinUI.Models;
@@ -17,7 +18,8 @@ public sealed class HelpDocSection
     public Visibility LinksVisibility => Links.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
 }
 
-public sealed class HelpDocSubsection
+[GeneratedBindableCustomProperty]
+public sealed partial class HelpDocSubsection
 {
     public string NumberedTitle { get; init; } = string.Empty;
 
@@ -32,7 +34,8 @@ public sealed class HelpDocSubsection
     public Visibility LinksVisibility => Links.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
 }
 
-public sealed class HelpDocLink
+[GeneratedBindableCustomProperty]
+public sealed partial class HelpDocLink
 {
     public string Label { get; init; } = string.Empty;
 

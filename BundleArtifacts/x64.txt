@@ -1,1 +1,1 @@
-MainPackage=C:\Github\Mystical\bin\x64\Release\net10.0-windows10.0.19041.0\win-x64\Mystical.WinUI_1.0.0.0_x64.msix
+MainPackage=C:\Github\Mystical\bin\Release\net10.0-windows10.0.19041.0\win-x64\Mystical.WinUI_1.0.0.0_x64.msix

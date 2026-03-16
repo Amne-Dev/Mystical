@@ -11,7 +11,6 @@ public sealed partial class SettingsPage : Page
     {
         ViewModel = viewModel;
         InitializeComponent();
-        DataContext = ViewModel;
     }
 
     private async void OnConnectEpicClicked(object sender, RoutedEventArgs e)

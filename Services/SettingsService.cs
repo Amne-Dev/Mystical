@@ -6,10 +6,6 @@ namespace Mystical.WinUI.Services;
 public sealed class SettingsService : ISettingsService
 {
     private readonly string _settingsPath;
-    private readonly JsonSerializerOptions _jsonOptions = new(JsonSerializerDefaults.Web)
-    {
-        WriteIndented = true
-    };
 
     public SettingsService()
     {
@@ -28,7 +24,7 @@ public sealed class SettingsService : ISettingsService
         await using var stream = File.OpenRead(_settingsPath);
         using var document = await JsonDocument.ParseAsync(stream);
 
-        var settings = document.RootElement.Deserialize<AppSettings>(_jsonOptions) ?? new AppSettings();
+        var settings = document.RootElement.Deserialize(AppSettingsJsonContext.Default.AppSettings) ?? new AppSettings();
 
         // Migrate existing users forward without forcing onboarding immediately.
         if (!document.RootElement.TryGetProperty("hasCompletedOnboarding", out _))
@@ -42,6 +38,6 @@ public sealed class SettingsService : ISettingsService
     public async Task SaveAsync(AppSettings settings)
     {
         await using var stream = File.Create(_settingsPath);
-        await JsonSerializer.SerializeAsync(stream, settings, _jsonOptions);
+        await JsonSerializer.SerializeAsync(stream, settings, AppSettingsJsonContext.Default.AppSettings);
     }
 }

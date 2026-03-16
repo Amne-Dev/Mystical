@@ -1,8 +1,10 @@
 using System.Globalization;
+using WinRT;
 
 namespace Mystical.WinUI.Models;
 
-public sealed class GameInfo
+[GeneratedBindableCustomProperty]
+public sealed partial class GameInfo
 {
     public string GameId { get; set; } = string.Empty;
 

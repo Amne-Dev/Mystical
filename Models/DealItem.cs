@@ -1,6 +1,9 @@
+using WinRT;
+
 namespace Mystical.WinUI.Models;
 
-public sealed class DealItem
+[GeneratedBindableCustomProperty]
+public sealed partial class DealItem
 {
     public string Title { get; set; } = string.Empty;
 

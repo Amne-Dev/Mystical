@@ -194,6 +194,36 @@ public sealed class MainViewModel : ViewModelBase
         StatusMessage = _allGames.Count == 1
             ? "Library ready. 1 game available."
             : $"Library ready. {_allGames.Count} games available.";
+
+        _ = RefreshInBackgroundIfNeededAsync();
+    }
+
+    private async Task RefreshInBackgroundIfNeededAsync()
+    {
+        try
+        {
+            var settings = await _settingsService.LoadAsync();
+            if (!settings.AutoScanGames)
+            {
+                return;
+            }
+
+            var result = await _gameLibraryService.ScanForChangesAsync();
+            if (!result.HasChanges)
+            {
+                return;
+            }
+
+            _allGames = result.Games.ToList();
+            RebuildPlatformFilters();
+            ApplyFilters();
+
+            StatusMessage = $"Library updated: +{result.AddedCount}, -{result.RemovedCount}, {result.UpdatedCount} changed.";
+        }
+        catch
+        {
+            // Ignore background refresh failures to keep startup responsive.
+        }
     }
 
     public async Task<bool> ImportCoverFromFileAsync(string filePath)
